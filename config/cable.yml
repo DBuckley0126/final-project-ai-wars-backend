@@ -1,0 +1,9 @@
+development:
+  adapter: async
+
+test:
+  adapter: test
+
+production:
+  adapter: redis
+  url: <%= ENV.fetch("REDIS_URL") { "redis://redistogo:73563e4c32ea1fd30d5ecaf3a0a9c853@dory.redistogo.com:10919/" } %>
