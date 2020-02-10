@@ -105,5 +105,6 @@ Rails.application.configure do
 
   # action Cable setup
   config.action_cable.allowed_request_origins = ['https://final-project-ai-wars-back.herokuapp.com', 'http://final-project-ai-wars-back.herokuapp.com', 'file://']
-  config.web_socket_server_url = "wss://final-project-ai-wars-back.herokuapp.com/cable" 
+  config.web_socket_server_url = Rails.application.credentials.WEB_SOCKET_SERVER_URL
+  
 end

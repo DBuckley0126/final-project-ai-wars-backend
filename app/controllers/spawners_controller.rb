@@ -1,0 +1,2 @@
+class SpawnersController < ApplicationController
+end
