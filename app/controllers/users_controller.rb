@@ -1,20 +1,16 @@
 class UsersController < ApplicationController
 
-
   def create
-
     internal_audience_id = Rails.application.credentials.JWT_AUDIENCE_ID
-
     decoded_token_hash = JWT.decode(params["JWT"]["JWTToken"], nil, false)[0]
-    
+    deconstructed_token = token_deconstructor(decoded_token_hash)
+
     if !decoded_token_hash["aud"] === internal_audience_id
       render json: {error: "Token does not match audience", status: 400}, status: 400
     end
     
     found_user = User.find_by(sub: decoded_token_hash["sub"])
-
-    deconstructed_token = token_deconstructor(decoded_token_hash)
-
+    
     if found_user
       found_user.update(deconstructed_token)
       api_token = JWT.encode(deconstructed_token, Rails.application.credentials.HMAC_SECRET, 'HS256')
@@ -30,9 +26,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # def user_strong_params
-  #   params.require(:user).permit(:sub, :given_name, :family_name, :locale, :picture, :email)
-  # end
   def token_deconstructor(decoded_token_hash)
     return {
       given_name: decoded_token_hash["given_name"],

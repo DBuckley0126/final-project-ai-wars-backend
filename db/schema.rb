@@ -19,6 +19,11 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.string "uuid", null: false
     t.bigint "user_1_id"
     t.bigint "user_2_id"
+    t.boolean "user_1_ready"
+    t.boolean "user_2_ready"
+    t.boolean "game_initiated"
+    t.string "user_1_colour"
+    t.string "user_2_colour"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["user_1_id"], name: "index_games_on_user_1_id"
@@ -58,6 +63,8 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.string "email"
     t.string "sub", null: false
     t.string "uuid"
+    t.integer "wins", default: 0
+    t.integer "losses", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["sub"], name: "index_users_on_sub", unique: true
