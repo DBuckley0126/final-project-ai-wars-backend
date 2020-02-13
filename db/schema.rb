@@ -51,9 +51,16 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "full_name"
+    t.string "given_name"
+    t.string "family_name"
+    t.string "locale"
+    t.string "picture"
+    t.string "email"
+    t.string "sub", null: false
+    t.string "uuid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["sub"], name: "index_users_on_sub", unique: true
   end
 
   add_foreign_key "games", "users", column: "user_1_id"
