@@ -1,10 +1,23 @@
 class User < ApplicationRecord
-  has_many :created_games, :class_name => "Game", :foreign_key => "user_1_id"
-  has_many :joined_games, :class_name => "Game", :foreign_key => "user_2_id"
+  has_many :games, :as => :host_user
+  has_many :games, :as => :join_user
   has_many :spawners
 
+  def hosted_games
+    Game.where(host_user_id: self.id)
+  end
+
+  def joined_games
+    Game.where(join_user_id: self.id)
+  end
+
   def skill_rating
-    skill_calc = self.wins / self.losses
+    if self.wins === 0 && self.losses === 0
+      skill_calc = 0
+    else
+      skill_calc = self.wins / self.losses
+    end
+  
     if self.total_games < 5
       return "New"
     elsif skill_calc <= 0.5
@@ -28,5 +41,9 @@ class User < ApplicationRecord
 
   def total_games
     self.wins + self.losses
+  end
+
+  def full_name
+    "#{self.given_name} #{self.family_name}"
   end
 end

@@ -1,4 +1,4 @@
 class Unit < ApplicationRecord
   belongs_to :spawner
-  belongs_to :game, through: :spawner
+  has_one :game, through: :spawner
 end

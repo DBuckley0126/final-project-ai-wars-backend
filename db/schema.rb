@@ -17,17 +17,17 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
 
   create_table "games", force: :cascade do |t|
     t.string "uuid", null: false
-    t.bigint "user_1_id"
-    t.bigint "user_2_id"
-    t.boolean "user_1_ready"
-    t.boolean "user_2_ready"
-    t.boolean "game_initiated"
-    t.string "user_1_colour"
-    t.string "user_2_colour"
+    t.integer "host_user_id"
+    t.string "host_user_type"
+    t.integer "join_user_id"
+    t.string "join_user_type"
+    t.boolean "host_user_ready", default: false
+    t.boolean "join_user_ready", default: false
+    t.boolean "game_initiated", default: false
+    t.string "host_user_colour"
+    t.string "join_user_colour"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["user_1_id"], name: "index_games_on_user_1_id"
-    t.index ["user_2_id"], name: "index_games_on_user_2_id"
     t.index ["uuid"], name: "index_games_on_uuid", unique: true
   end
 
@@ -70,6 +70,4 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.index ["sub"], name: "index_users_on_sub", unique: true
   end
 
-  add_foreign_key "games", "users", column: "user_1_id"
-  add_foreign_key "games", "users", column: "user_2_id"
 end

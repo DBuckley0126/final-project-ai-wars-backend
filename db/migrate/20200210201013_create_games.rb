@@ -2,13 +2,15 @@ class CreateGames < ActiveRecord::Migration[6.0]
   def change
     create_table :games do |t|
       t.string :uuid, :null => false
-      t.references :user_1, foreign_key: { to_table: 'users'}
-      t.references :user_2, foreign_key: { to_table: 'users'}
-      t.boolean :user_1_ready, default: false
-      t.boolean :user_2_ready, default: false
+      t.integer :host_user_id
+      t.string :host_user_type
+      t.integer :join_user_id
+      t.string :join_user_type
+      t.boolean :host_user_ready, default: false
+      t.boolean :join_user_ready, default: false
       t.boolean :game_initiated, default: false
-      t.string :user_1_colour
-      t.string :user_2_colour
+      t.string :host_user_colour
+      t.string :join_user_colour
 
       t.index :uuid, unique: true
       t.timestamps

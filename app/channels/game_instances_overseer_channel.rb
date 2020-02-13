@@ -3,7 +3,9 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
     stream_from "game_instances_overseer_channel"
     stream_from "game_instances_overseer_channel_##{connection.user.sub}"
 
-    Game.create(user_1: User.first)
+    # binding.pry
+    # Game.new(host_user: User.first, join_user: User.last)
+    
 
     ActionCable.server.broadcast("game_instances_overseer_channel_##{connection.user.sub}", 
       channel: "game_instances_overseer_channel_##{connection.user.sub}", 
@@ -13,13 +15,28 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
       body: {}
     )
 
+    serializerOptions = { 
+      fields: { 
+        game: [ 
+          :capacity, 
+          :uuid, 
+          :host_user_ready, 
+          :join_user_ready, 
+          :game_initiated, 
+          :host_user_colour, 
+          :join_user_colour, 
+          :join_user, 
+          :host_user 
+        ] 
+      } 
+    }
 
     ActionCable.server.broadcast("game_instances_overseer_channel_##{connection.user.sub}", 
       channel: "game_instances_overseer_channel_##{connection.user.sub}", 
       type: "subscribed",
       action: "UPDATE_GAME_INSTANCES",
       header: {},
-      body: GameSerializer.new(Game.uninitialized_games).serializable_hash
+      body: GameSerializer.new(Game.uninitialized_games, serializerOptions).serializable_hash
     )
   end
 

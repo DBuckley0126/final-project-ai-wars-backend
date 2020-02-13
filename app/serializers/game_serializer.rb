@@ -1,13 +1,21 @@
+include ActiveRecordFilters
 class GameSerializer
   include FastJsonapi::ObjectSerializer
-  belongs_to :user_1, :class_name => "User"
-  belongs_to :user_2, :class_name => "User"
+  # belongs_to :host_user, :polymorphic => true
+  # belongs_to :join_user, :polymorphic => true
   has_many :spawners
   has_many :units, through: :spawners
 
-  attributes :capacity, :uuid, :user_1, :user_2, :user_1_ready, :user_2_ready, :game_initiated, :user_1_colour, :user_2_colour
+  attributes :capacity, :uuid, :host_user_ready, :join_user_ready, :game_initiated, :host_user_colour, :join_user_colour
 
-  # attribute :leaderboard_entries do |object|
-  #   object.filtered_api_call(:leaderboard_entries, [:id, :score])
-  # end
+
+  attribute :join_user do |object|
+    object.filtered_api_call(:join_user, [:id, :full_name, :given_name, :family_name, :locale, :picture, :wins, :losses, :skill_rating, :total_games])
+  end
+  
+  attribute :host_user do |object|
+    object.filtered_api_call(:host_user, [:id, :full_name, :given_name, :family_name, :locale, :picture, :wins, :losses, :skill_rating, :total_games])
+  end
+
+
 end
