@@ -16,6 +16,4 @@ class GameSerializer
   attribute :host_user do |object|
     object.filtered_api_call(:host_user, [:id, :full_name, :given_name, :family_name, :locale, :picture, :wins, :losses, :skill_rating, :total_games])
   end
-
-
 end

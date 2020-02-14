@@ -1,6 +1,6 @@
 class Game < ApplicationRecord
   belongs_to :host_user, :polymorphic => true
-  belongs_to :join_user, :polymorphic => true
+  belongs_to :join_user, :polymorphic => true, optional: true
   has_many :spawners
   has_many :units, through: :spawners
 
@@ -12,9 +12,9 @@ class Game < ApplicationRecord
     found_games = Game.all.map do |game|
       if  game.capacity === "WAITING" || "FULL"
         if game.game_initiated === false
-          return game
+          game
         end
-      end 
+      end
     end
     return found_games
   end
@@ -28,6 +28,22 @@ class Game < ApplicationRecord
       return "EMPTY"
     else
       return "UNKNOWN"
+    end
+  end
+
+  def add_user(user)
+
+    if self.host_user === user || self.join_user || self.join_user === user
+      return false
+    end
+
+    self.join_user = user
+    successfully_saved_game = self.save
+
+    if successfully_saved_game
+      return self
+    else 
+      return false
     end
   end
 
