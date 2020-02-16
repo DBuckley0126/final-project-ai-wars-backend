@@ -11,6 +11,7 @@ class CreateGames < ActiveRecord::Migration[6.0]
       t.boolean :game_initiated, default: false
       t.string :host_user_colour
       t.string :join_user_colour
+      t.string :status, default: "LOBBY"
 
       t.index :uuid, unique: true
       t.timestamps

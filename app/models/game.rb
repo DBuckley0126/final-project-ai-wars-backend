@@ -1,22 +1,16 @@
+require_relative '../../app/channels/broadcast_actions/game_instances_overseer_actions.rb'
+
 class Game < ApplicationRecord
   belongs_to :host_user, :polymorphic => true
   belongs_to :join_user, :polymorphic => true, optional: true
   has_many :spawners
   has_many :units, through: :spawners
 
-  before_create :set_uuid
   before_create :set_colours
 
   def self.uninitialized_games
-    Game.order(created_at: :desc)
-    found_games = Game.all.map do |game|
-      if  game.capacity === "WAITING" || "FULL"
-        if game.game_initiated === false
-          game
-        end
-      end
-    end
-    return found_games
+    Game.order(:created_at)
+    return Game.where(status: "LOBBY", game_initiated: false)
   end
 
   def capacity
@@ -41,17 +35,18 @@ class Game < ApplicationRecord
     successfully_saved_game = self.save
 
     if successfully_saved_game
+      GameInstancesOverseerActions.update_game_instances()
       return self
     else 
       return false
     end
   end
 
-  private
-
   def set_uuid
     self.uuid = SecureRandom.uuid
   end
+
+  private
 
   def set_colours
     colour_array = ["#34656", "#12356", "#54636"]

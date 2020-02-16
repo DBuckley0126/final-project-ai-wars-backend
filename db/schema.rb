@@ -26,6 +26,7 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.boolean "game_initiated", default: false
     t.string "host_user_colour"
     t.string "join_user_colour"
+    t.string "status", default: "LOBBY"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["uuid"], name: "index_games_on_uuid", unique: true

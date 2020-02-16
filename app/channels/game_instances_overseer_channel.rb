@@ -3,8 +3,6 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
     stream_from "game_instances_overseer_channel"
     stream_from "game_instances_overseer_channel_##{connection.user.sub}"
 
-    # Game.create(host_user: User.first)
-
     ActionCable.server.broadcast("game_instances_overseer_channel_##{connection.user.sub}", 
       channel: "game_instances_overseer_channel_##{connection.user.sub}", 
       type: "subscribed",
@@ -31,7 +29,7 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
 
     ActionCable.server.broadcast("game_instances_overseer_channel_##{connection.user.sub}", 
       channel: "game_instances_overseer_channel_##{connection.user.sub}", 
-      type: "subscribed",
+      type: "update_game_instances",
       action: "UPDATE_GAME_INSTANCES",
       header: {},
       body: GameSerializer.new(Game.uninitialized_games, serializerOptions).serializable_hash
@@ -39,7 +37,7 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
 
   end
 
-  def game_instances(data)
+  def update_game_instances(data)
 
   end
 
