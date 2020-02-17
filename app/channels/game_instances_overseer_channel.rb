@@ -37,10 +37,6 @@ class GameInstancesOverseerChannel < ApplicationCable::Channel
 
   end
 
-  def update_game_instances(data)
-
-  end
-
   def unsubscribed
     # Any cleanup needed when channel is unsubscribed
   end
