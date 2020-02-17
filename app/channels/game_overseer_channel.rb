@@ -107,14 +107,38 @@ class GameOverseerChannel < ApplicationCable::Channel
       GameInstancesOverseerActions.update_game_lobby(found_lobby)
     end
 
-    if found_lobby.host_user_ready && found_lobby.join_user_ready
+  end
 
+  def start_game_request
+    user = connection.user
+    found_lobby = Game.find_by(uuid: params["game_uuid"])
+
+    if !found_lobby || !user
+      return
+    end
+
+    if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.host_user === user
+      found_lobby.game_initiated = true
+      found_lobby.status = "IN_GAME"
+      found_lobby.save
+
+      ActionCable.server.broadcast("game_channel_##{found_lobby.uuid}", 
+        channel: "game_channel_##{found_lobby.uuid}", 
+        type: "start_game",
+        action: "START_GAME",
+        header: {},
+        body: {}
+      )
+
+      GameInstancesOverseerActions.update_game_instances()
+    else 
+      return
     end
   end
 
   def unsubscribed
     user = connection.user
-    found_game_lobby = Game.find_by(uuid: params["game_uuid"])
+    found_lobby = Game.find_by(uuid: params["game_uuid"])
 
     serializerOptions = { 
       fields: {
@@ -132,30 +156,54 @@ class GameOverseerChannel < ApplicationCable::Channel
       } 
     }
 
-    if found_game_lobby && found_game_lobby.host_user === user
-      found_game_lobby.status = "CANCELED_LOBBY"
-      found_game_lobby.host_user_ready = false
-      found_game_lobby.join_user_ready = false
-      found_game_lobby.save
+    if found_lobby && found_lobby.game_initiated
+        found_lobby.status = "CANCELED_GAME"
+        found_lobby.save
 
-      ActionCable.server.broadcast("game_channel_##{found_game_lobby.uuid}", 
-        channel: "game_channel_##{found_game_lobby.uuid}",
-        type: "unsubscribed",
-        action: "CANCEL_LOBBY",
-        header: {user_type_left: "host_user"},
-        body: GameSerializer.new(found_game_lobby, serializerOptions).serializable_hash
-      )
+        if found_lobby && found_lobby.host_user === user
+          user_type_left = "Host"
+        elsif found_lobby && found_lobby.join_user === user
+          user_type_left = "Join user"
+        else
+          user_type_left = "Unknown"
+        end
 
-    elsif found_game_lobby && found_game_lobby.join_user === user
-      found_game_lobby.join_user = nil
-      found_game_lobby.host_user_ready = false
-      found_game_lobby.join_user_ready = false
-      found_game_lobby.save
-      GameInstancesOverseerActions.update_game_lobby(found_game_lobby)
+  
+        ActionCable.server.broadcast("game_channel_##{found_lobby.uuid}", 
+          channel: "game_channel_##{found_lobby.uuid}",
+          type: "unsubscribed",
+          action: "CANCEL_LOBBY",
+          header: {reason: "#{user_type_left} left the game"},
+          body: GameSerializer.new(found_lobby, serializerOptions).serializable_hash
+        )
 
+      GameInstancesOverseerActions.update_game_lobby(found_lobby)
 
+    else
+      if found_lobby && found_lobby.host_user === user
+        found_lobby.status = "CANCELED_LOBBY"
+        found_lobby.host_user_ready = false
+        found_lobby.join_user_ready = false
+        found_lobby.save
+  
+        ActionCable.server.broadcast("game_channel_##{found_lobby.uuid}", 
+          channel: "game_channel_##{found_lobby.uuid}",
+          type: "unsubscribed",
+          action: "CANCEL_LOBBY",
+          header: {reason: "Host left the lobby"},
+          body: GameSerializer.new(found_lobby, serializerOptions).serializable_hash
+        )
+  
+      elsif found_lobby && found_lobby.join_user === user
+        found_lobby.join_user = nil
+        found_lobby.host_user_ready = false
+        found_lobby.join_user_ready = false
+        found_lobby.save
+        GameInstancesOverseerActions.update_game_lobby(found_lobby)
+      end
+
+      GameInstancesOverseerActions.update_game_instances()
     end
-    GameInstancesOverseerActions.update_game_instances()
   end
 
 end
