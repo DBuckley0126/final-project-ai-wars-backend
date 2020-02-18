@@ -118,7 +118,8 @@ module GameOverseerChannelLobbyMethods
       return
     end
 
-    if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.host_user === user
+    #TEMPORARY CHANGE TO JOIN_USER, CHANGE BACK!!!
+    if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.join_user === user
       found_lobby.game_initiated = true
       found_lobby.status = "IN_GAME"
       found_lobby.save
@@ -159,6 +160,12 @@ module GameOverseerChannelLobbyMethods
 
     if found_lobby && found_lobby.game_initiated
         found_lobby.status = "CANCELED_GAME"
+        # TEST PURPOSES DELETE AFTER
+        found_lobby.status = "LOBBY"
+        found_lobby.join_user = nil
+        found_lobby.join_user_type = nil
+        found_lobby.game_initiated = false
+        #DELETE BETWEEN
         found_lobby.save
 
         if found_lobby && found_lobby.host_user === user

@@ -3,8 +3,8 @@ module CableHelperActions
   def self.update_game_instances
     serializerOptions = { 
       fields: { 
-        game: [ 
-          :capacity, 
+        game: [
+          :capacity,
           :uuid, 
           :host_user_ready, 
           :join_user_ready, 
@@ -12,8 +12,8 @@ module CableHelperActions
           :host_user_colour, 
           :join_user_colour, 
           :join_user, 
-          :host_user 
-        ] 
+          :host_user
+        ]
       } 
     }
 

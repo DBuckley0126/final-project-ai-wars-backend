@@ -33,16 +33,20 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
   end
 
   create_table "spawners", force: :cascade do |t|
-    t.string "uuid", null: false
-    t.bigint "game_id"
-    t.bigint "user_id"
-    t.text "code"
-    t.boolean "active", default: true
+    t.bigint "game_id", null: false
+    t.bigint "user_id", null: false
+    t.text "code_string", default: ""
+    t.boolean "active", default: true, null: false
+    t.string "colour", default: "#7aa9de", null: false
+    t.json "skill_points", default: {"melee"=>0, "range"=>0, "vision"=>0, "health"=>0, "movement"=>0}, null: false
+    t.boolean "passed_initial_test", null: false
+    t.boolean "error", default: false, null: false
+    t.boolean "cancelled", default: false, null: false
+    t.json "error_history", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_spawners_on_game_id"
     t.index ["user_id"], name: "index_spawners_on_user_id"
-    t.index ["uuid"], name: "index_spawners_on_uuid", unique: true
   end
 
   create_table "units", force: :cascade do |t|

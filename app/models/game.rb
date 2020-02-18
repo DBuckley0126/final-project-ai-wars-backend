@@ -1,4 +1,4 @@
-require_relative '../../app/channels/broadcast_actions/game_instances_overseer_actions.rb'
+require_relative '../../app/channels/broadcast_actions/cable_helper_actions.rb'
 
 class Game < ApplicationRecord
   belongs_to :host_user, :polymorphic => true
@@ -49,7 +49,7 @@ class Game < ApplicationRecord
   private
 
   def set_colours
-    colour_array = ["#34656", "#12356", "#54636"]
+    colour_array = ["#3432a8", "#a83283", "#3ca832", "#a83c32"]
     self.host_user_colour = colour_array.sample
     self.join_user_colour = colour_array.sample
   end
