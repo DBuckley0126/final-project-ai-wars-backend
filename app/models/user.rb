@@ -2,6 +2,7 @@ class User < ApplicationRecord
   has_many :games, :as => :host_user
   has_many :games, :as => :join_user
   has_many :spawners
+  has_many :turns, through: :games
 
   def hosted_games
     Game.where(host_user_id: self.id)

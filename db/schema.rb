@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_10_205705) do
+ActiveRecord::Schema.define(version: 2020_02_20_205705) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,9 +50,23 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.index ["user_id"], name: "index_spawners_on_user_id"
   end
 
+  create_table "turns", force: :cascade do |t|
+    t.bigint "game_id"
+    t.bigint "user_id"
+    t.json "errors_for_turn", default: {}, null: false
+    t.json "user_turn_payload"
+    t.integer "uuid"
+    t.json "units_output_for_turn", default: {}, null: false
+    t.json "current_game_state"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["game_id"], name: "index_turns_on_game_id"
+    t.index ["user_id"], name: "index_turns_on_user_id"
+  end
+
   create_table "units", force: :cascade do |t|
     t.bigint "spawner_id"
-    t.text "marshal_string"
+    t.text "marshal_object"
     t.boolean "active", default: true
     t.integer "attribute_health"
     t.integer "coordinate_Y"
@@ -60,6 +74,8 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.json "data_set"
     t.json "error_history", default: {}, null: false
     t.integer "uuid"
+    t.string "colour"
+    t.json "unit_output_history"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

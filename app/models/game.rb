@@ -5,6 +5,7 @@ class Game < ApplicationRecord
   belongs_to :join_user, :polymorphic => true, optional: true
   has_many :spawners
   has_many :units, through: :spawners
+  has_many :turns
 
   before_create :set_colours
 

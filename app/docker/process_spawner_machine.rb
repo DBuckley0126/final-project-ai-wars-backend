@@ -12,7 +12,7 @@ module ProcessSpawnerMachine
 
       # Creates class file from security checked string
       if json_spawner["attributes"]["passed_initial_test"] && !json_spawner["attributes"]["cancelled"]
-        randomUUID = Random.new_seed
+        randomUUID = rand(1000000..9999999)
         File.open("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb", "w"){|file| file.puts json_spawner["attributes"]["code_string"]}
 
         # Attempts load of created file
@@ -23,14 +23,14 @@ module ProcessSpawnerMachine
 
           File.delete("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb") if File.exist?("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb")
           
-          yaml_hash = YAML.dump({processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "Syntax Error", message: captured_error, payload: nil}]})
+          yaml_hash = YAML.dump({id: json_spawner["id"], processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "Syntax Error", message: captured_error, payload: nil}]})
           writer.write(yaml_hash)
           exit
         end
 
       else
         File.delete("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb") if File.exist?("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb")
-        yaml_hash = YAML.dump({processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "Spawner has not executed", message: "Spawner has not passed initial tests or has been canceled internally", payload: nil}]})
+        yaml_hash = YAML.dump({id: json_spawner["id"], processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "Spawner has not executed", message: "Spawner has not passed initial tests or has been canceled internally", payload: nil}]})
         writer.write(yaml_hash)
         exit
       end
@@ -45,28 +45,32 @@ module ProcessSpawnerMachine
         }
       rescue StandardError => error
         File.delete("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb") if File.exist?("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb")
-        yaml_hash = YAML.dump({processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "SEVER_ERROR: Spawner has not executed", message: "Unable to load all unit marshal strings", payload: nil}]})
+        yaml_hash = YAML.dump({id: json_spawner["id"], processed_units: [], spawner_errors:[{test_results: "FAIL", error_type: "SEVER_ERROR: Spawner has not executed", message: "Unable to load all unit marshal strings", payload: nil}]})
         writer.write(yaml_hash)
         exit
       end
 
-      # Attempt to create new unit from spawner
-      new_unit_result = ProcessSpawnerMachine.get_new_unit_output()
-
-       # Add new unit to array if results was "PASS"
-      if new_unit_result[:test_results] === "FAIL"
-        spawner_error_array << new_unit_result
+      # Attempt to create new unit from spawner if spawner still active
+      if json_spawner["attributes"]["active"]
+        new_unit_result = ProcessSpawnerMachine.get_new_unit_output()
       else
-        unit_object_array << {uuid: Random.new_seed, object: new_unit_result[:payload], data_set: {}, errors: [], new: true}
+        new_unit_result = nil
       end
 
-      # Process units to produce their outputs, Completing Marshal.dump on object
+       # Add new unit to array if results was "PASS" and spawner was active
+      if new_unit_result && new_unit_result[:test_results] === "FAIL"
+        spawner_error_array << new_unit_result
+      else 
+        unit_object_array << {uuid: rand(1000000000..9999999999), latest_unit_output: {}, spawner_id: json_spawner["id"], marshal_object: new_unit_result[:payload], data_set: {}, errors: [], new: true, colour: json_spawner["attributes"]["colour"]}
+      end
+
+      # Process units to produce their outputs
       processed_unit_object_array = unit_object_array.map { |unit| 
         ProcessSpawnerMachine.process_unit(unit)
       }
 
       ## Outputs processed_units + spawner errors to IO.Pipe
-      yaml_hash = YAML.dump({processed_units: processed_unit_object_array, spawner_errors: spawner_error_array}) 
+      yaml_hash = YAML.dump({id: json_spawner["id"], processed_units: processed_unit_object_array, spawner_errors: spawner_error_array}) 
 
       writer.write(yaml_hash)
       File.delete("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb") if File.exist?("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb")
@@ -93,13 +97,13 @@ module ProcessSpawnerMachine
     rescue StandardError => error
       return {test_results: "FAIL", error_type: "Failed to create Pixeling", message: error.message, payload: nil}
     end
-    return {test_results: "PASS", error_type: nil, message: nil, payload: initial_unit}
+    return {test_results: "PASS", error_type: nil, message: nil, payload: Marshal.dump(initial_unit)}
   end
 
 
   def self.process_unit(unit)
-    object = unit[:object]
-    
+    object = Marshal.load(unit[:marshal_object])
+
     complete_unit_return = {
       health: {},
       melee: {},
@@ -161,17 +165,17 @@ module ProcessSpawnerMachine
 
     rescue NameError => error
       error_message = ProcessSpawnerMachine.print_name_exception(error, true)
-      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
+      return {uuid: unit[:uuid], latest_unit_output: empty_unit_return, marshal_object: Marshal.dump(object), spawner_id: unit[:spawner_id], colour: unit[:colour], new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
     
     rescue ArgumentError => error
       error_message = ProcessSpawnerMachine.print_argument_exception(error, true)
-      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
+      return {uuid: unit[:uuid], latest_unit_output: empty_unit_return, marshal_object: Marshal.dump(object), spawner_id: unit[:spawner_id], colour: unit[:colour], new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
     
     rescue StandardError => error
-      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: "Issue calling methods on unit"}]}
+      return {uuid: unit[:uuid], latest_unit_output: empty_unit_return, marshal_object: Marshal.dump(object), spawner_id: unit[:spawner_id], colour: unit[:colour], new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: "Issue calling methods on unit"}]}
     end
 
-    return {uuid: unit[:uuid], unit_output: complete_unit_return, object: Marshal.dump(object), new: unit[:new], errors: unit_error_array}
+    return {uuid: unit[:uuid], latest_unit_output: complete_unit_return, marshal_object: Marshal.dump(object), spawner_id: unit[:spawner_id], colour: unit[:colour], new: unit[:new], errors: unit_error_array}
   end
 
   def self.print_syntax_exception(exception, explicit)
