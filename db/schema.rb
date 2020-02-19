@@ -43,6 +43,7 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
     t.boolean "error", default: false, null: false
     t.boolean "cancelled", default: false, null: false
     t.json "error_history", default: {}, null: false
+    t.string "spawner_name", default: "Unit", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_spawners_on_game_id"
@@ -50,10 +51,15 @@ ActiveRecord::Schema.define(version: 2020_02_10_205705) do
   end
 
   create_table "units", force: :cascade do |t|
-    t.string "uuid", null: false
     t.bigint "spawner_id"
-    t.text "code"
+    t.text "marshal_string"
     t.boolean "active", default: true
+    t.integer "attribute_health"
+    t.integer "coordinate_Y"
+    t.integer "coordinate_X"
+    t.json "data_set"
+    t.json "error_history", default: {}, null: false
+    t.integer "uuid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

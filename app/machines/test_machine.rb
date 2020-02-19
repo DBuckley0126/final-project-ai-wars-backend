@@ -55,6 +55,14 @@ module TestMachine
           raise SecurityError.new(regex_test[:test])
         end
       end
+      match_object_for_class = codeString.match(/\b(?:\s*class\s\s*Pixeling)\b/)
+      if !match_object_for_class
+        raise SecurityError.new("Should contain 'class Pixeling")
+      end
+      match_object_for_end = codeString.match(/\b(?:\s*end)\b/i)
+      if !match_object_for_end
+        raise SecurityError.new("Should contain 'end")
+      end
     rescue SecurityError => error
       return {test_results: "FAIL", error_type: "Failed Initial class security test", message: error.message}
     end

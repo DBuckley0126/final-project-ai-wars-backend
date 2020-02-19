@@ -13,6 +13,14 @@ class Game < ApplicationRecord
     return Game.where(status: "LOBBY", game_initiated: false)
   end
 
+  def host_user?(user)
+    self.host_user === user ? true : false
+  end
+
+  def join_user?(user)
+    self.join_user === user ? true : false
+  end
+
   def capacity
     if !!self.host_user && !!self.join_user
       return "FULL"
