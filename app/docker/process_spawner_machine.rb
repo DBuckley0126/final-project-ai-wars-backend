@@ -99,7 +99,17 @@ module ProcessSpawnerMachine
 
   def self.process_unit(unit)
     object = unit[:object]
-    complete_object_return = {
+    
+    complete_unit_return = {
+      health: {},
+      melee: {},
+      range: {},
+      vision: {},
+      movement: {}
+    }
+
+    # For sending back when exception is rescued
+    empty_unit_return = {
       health: {},
       melee: {},
       range: {},
@@ -116,52 +126,52 @@ module ProcessSpawnerMachine
 
       if object.respond_to? :movement
         test_results = DockerTestMachine.unit_movement_test(object.movement())
-        complete_object_return[:movement] = test_results[:hash_payload]
+        complete_unit_return[:movement] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end
 
       if object.respond_to? :melee
         test_results = DockerTestMachine.unit_melee_test(object.melee())
-        complete_object_return[:melee] = test_results[:hash_payload]
+        complete_unit_return[:melee] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end
 
       if object.respond_to? :range
         test_results = DockerTestMachine.unit_range_test(object.range())
-        complete_object_return[:range] = test_results[:hash_payload]
+        complete_unit_return[:range] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end
 
       if object.respond_to? :vision
         test_results = DockerTestMachine.unit_vision_test(object.vision())
-        complete_object_return[:vision] = test_results[:hash_payload]
+        complete_unit_return[:vision] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end
 
       if object.respond_to? :health
         test_results = DockerTestMachine.unit_health_test(object.health())
-        complete_object_return[:health] = test_results[:hash_payload]
+        complete_unit_return[:health] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end
+
     rescue NameError => error
       error_message = ProcessSpawnerMachine.print_name_exception(error, true)
-      return {uuid: unit[:uuid], object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
+      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
     
     rescue ArgumentError => error
       error_message = ProcessSpawnerMachine.print_argument_exception(error, true)
-      return {uuid: unit[:uuid], object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
+      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: error_message}]}
     
     rescue StandardError => error
-      return {uuid: unit[:uuid], object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: "Issue calling methods on unit"}]}
-    
+      return {uuid: unit[:uuid], unit_output: empty_unit_return, object: Marshal.dump(object), new: unit[:new], errors: [{completed_cycle: false, error_type: "FAIL", error_message: "Issue calling methods on unit"}]}
     end
 
-    return {uuid: unit[:uuid], object: Marshal.dump(object), new: unit[:new], errors: unit_error_array}
+    return {uuid: unit[:uuid], unit_output: complete_unit_return, object: Marshal.dump(object), new: unit[:new], errors: unit_error_array}
   end
 
   def self.print_syntax_exception(exception, explicit)

@@ -23,6 +23,7 @@ module TestMachine
       {regex: /\b(?:\s*module_eval)\b/i, test: "Should not contain 'module_eval'"},
       {regex: /\b(?:\s*module_exec)\b/i, test: "Should not contain 'module_exec'"},
       {regex: /\b(?:\s*class_eval)\b/i, test: "Should not contain 'class_eval'"},
+      {regex: /\b(?:\s*exit)\b/i, test: "Should not contain 'exit!'"},
       {regex: /\b(?:\s*exit!)\b/i, test: "Should not contain 'exit!'"},
       {regex: /\b(?:\s*ssl_client)\b/i, test: "Should not contain 'ssl_client'"},
       {regex: /\b(?:\s*ssl_context)\b/i, test: "Should not contain 'ssl_context'"},
