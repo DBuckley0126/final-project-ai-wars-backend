@@ -74,7 +74,6 @@ module GameOverseerChannelLobbyMethods
       end
 
     else
-      binding.pry  
     end
     CableHelperActions.update_game_instances()
   end

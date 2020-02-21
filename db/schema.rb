@@ -14,6 +14,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "postgis"
 
   create_table "games", force: :cascade do |t|
     t.string "uuid", null: false
@@ -27,6 +28,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "host_user_colour"
     t.string "join_user_colour"
     t.string "status", default: "LOBBY"
+    t.integer "turn_count", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["uuid"], name: "index_games_on_uuid", unique: true
@@ -42,7 +44,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.boolean "passed_initial_test", null: false
     t.boolean "error", default: false, null: false
     t.boolean "cancelled", default: false, null: false
-    t.json "error_history", default: {}, null: false
+    t.json "error_history_array", default: [], null: false, array: true
     t.string "spawner_name", default: "Unit", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -53,11 +55,12 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
   create_table "turns", force: :cascade do |t|
     t.bigint "game_id"
     t.bigint "user_id"
-    t.json "errors_for_turn", default: {}, null: false
+    t.json "errors_for_turn_array", default: [], null: false, array: true
     t.json "user_turn_payload"
-    t.integer "uuid"
-    t.json "units_output_for_turn", default: {}, null: false
+    t.bigint "uuid"
+    t.json "units_output_for_turn_array", default: [], null: false, array: true
     t.json "current_game_state"
+    t.integer "turn_count"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_turns_on_game_id"
@@ -65,17 +68,24 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
   end
 
   create_table "units", force: :cascade do |t|
-    t.bigint "spawner_id"
-    t.text "marshal_object"
+    t.bigint "spawner_id", null: false
+    t.binary "marshal_object", null: false
     t.boolean "active", default: true
     t.integer "attribute_health"
     t.integer "coordinate_Y"
     t.integer "coordinate_X"
+    t.integer "base_health"
+    t.integer "base_movement"
+    t.integer "base_range"
+    t.integer "base_melee"
+    t.integer "base_vision"
     t.json "data_set"
-    t.json "error_history", default: {}, null: false
-    t.integer "uuid"
-    t.string "colour"
-    t.json "unit_output_history"
+    t.json "error_history_array", default: [], null: false, array: true
+    t.json "movement_history_array", default: [], null: false, array: true
+    t.bigint "uuid", null: false
+    t.string "colour", null: false
+    t.json "unit_output_history_array", default: [], null: false, array: true
+    t.boolean "new", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

@@ -14,6 +14,15 @@ class Game < ApplicationRecord
     return Game.where(status: "LOBBY", game_initiated: false)
   end
 
+  def self.get_for_turn(turn)
+    turn.game
+  end
+
+  def increase_turn_count
+    self.turn_count = self.turn_count + 1
+    self.save
+  end
+
   def host_user?(user)
     self.host_user === user ? true : false
   end
