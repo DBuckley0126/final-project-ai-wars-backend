@@ -1,7 +1,6 @@
 # final-project-ai-wars-backend
-A Flatiron Javascript project — Gryo is a javascript game which runs simultaneously on your phone and desktop, using the mobile device gyroscope sensors as the desktop game input for control of a spaceship in a zero-gravity environment.
-
-The backend of this project  uses the Ruby on Rails framework toegther with th ActionCable technology that Rails introduced to handle the WebSocket functionality required for this project.
+A Flatiron React Project — AI Wars is a educational multiplayer strategy game where players battle using an
+integrated IDE to code AI units to take out the opposing players AI army.
 
 # Ruby Version
 2.6.5
