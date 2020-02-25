@@ -13,6 +13,7 @@ class CreateGames < ActiveRecord::Migration[6.0]
       t.string :join_user_colour
       t.string :status, default: "LOBBY"
       t.integer :turn_count, default: 0
+      t.json :map_state, default: {}, null: false
 
       t.index :uuid, unique: true
       t.timestamps

@@ -28,6 +28,7 @@ module StateMachine
   def self.game_state_processor(turn)
     game = turn.game
     user = turn.game
+    current_map_state = game.map_state
 
     all_friendly_active_units = Unit.find_all_friendly_units(turn)
 
@@ -37,28 +38,65 @@ module StateMachine
       if unit.new
         StateMachine.process_new_unit_state(unit)
       end
-      StateMachine.process_unit_movement(unit, turn)
     end
+    
+    11.times do |step_number|
+      returned_map_state = StateMachine.process_step(all_friendly_active_units, turn, step_number, current_map_state)
+      current_map_state = returned_map_state
+      turn.map_states_for_turn[step_number] = Game.game_state_to_array(returned_map_state)
+    end
+
+    game.map_state = current_map_state
+
+    turn.save
+    game.save
   end
 
   def self.process_new_unit_state(unit)
-    unit.coordinate_Y = rand(1..50)
-    unit.coordinate_X = 1
     unit.attribute_health = unit.spawner.skill_points["health"]
     unit.base_health = unit.spawner.skill_points["health"]
     unit.base_melee = unit.spawner.skill_points["melee"]
     unit.base_vision = unit.spawner.skill_points["vision"]
     unit.base_range = unit.spawner.skill_points["range"]
     unit.base_movement = unit.spawner.skill_points["movement"]
+    unit.coordinate_X = 1
+
+    found_unit_output = unit.unit_output_history_array.first
+    if found_unit_output && found_unit_output["output"]["spawn_position"] && found_unit_output["output"]["spawn_position"]["Y"] && found_unit_output["output"]["spawn_position"]["Y"].is_a?(Integer)
+      unit.base_spawn_position = found_unit_output["output"]["spawn_position"]["Y"]
+      unit.coordinate_Y = unit.base_spawn_position
+    else
+      unit.base_spawn_position = nil
+      unit.coordinate_Y = rand(1..50)
+    end
+    
     unit.new = false
     unit.save
   end
 
-  def self.process_unit_movement(unit, turn)
+  def self.process_step(freindly_units, turn, step_number, map_state)
+    # complete path finding of unit if under movement limit
+
+    if step_number === 0
+      freindly_units.each do |unit|
+        map_state = StateMachine.process_unit_initial_positions(unit, turn, map_state)
+      end
+    else
+      freindly_units.each do |unit|
+        if step_number <= unit.base_movement
+          map_state = StateMachine.process_unit_movement(unit, turn, map_state)
+        end
+      end
+    end
+
+    map_state
+  end
+
+  def self.process_unit_movement(unit, turn, map_state)
     found_unit_output = unit.unit_output_history_array.find { |unit_output| unit_output["turn_count"] === turn.turn_count }
     
-    movement_array = []
 
+    # Does basic checks on unit desired movement output
     if found_unit_output && 
       found_unit_output["output"]["movement"] && 
       found_unit_output["output"]["movement"]["target"] && 
@@ -70,42 +108,63 @@ module StateMachine
       current_X = unit.coordinate_X
       current_Y = unit.coordinate_Y
 
-      movement_limit = unit.base_movement
-
       if target_X && target_Y && current_X && current_Y
         #Begin movement
-        movement_limit.times do |i|
-          #Check if arrived at target_X
-          if current_X != target_X
-            #Checks if target is higher or lower than current
-            if current_X < target_X
-              current_X = current_X + 1
-            end
-            if current_X > target_X
-              current_X = current_X - 1
-            end
+
+        #Check if arrived at target_X
+        if current_X != target_X
+          #Checks if target is higher or lower than current
+          if current_X < target_X
+            current_X = current_X + 1
           end
-          #Check if arrived at target_Y
-          if current_Y != target_Y
-            #Checks if target is higher or lower than current
-            if current_Y < target_Y
-              current_Y = current_Y + 1
-            end
-            if current_Y > target_Y
-              current_Y = current_Y - 1
-            end
+          if current_X > target_X
+            current_X = current_X - 1
           end
-          # Add current location to movement array
-          movement_array << {X: current_X, Y: current_Y}
         end
-        #End of movement loop
+
+        #Check if arrived at target_Y
+        if current_Y != target_Y
+          #Checks if target is higher or lower than current
+          if current_Y < target_Y
+            current_Y = current_Y + 1
+          end
+          if current_Y > target_Y
+            current_Y = current_Y - 1
+          end
+        end
+
+        map_state[unit.string_coordinates] = nil
+
         unit.coordinate_X = current_X
         unit.coordinate_Y = current_Y
-      end
 
+        map_state[unit.string_coordinates] = unit.uuid
+      end
     end
-    unit.movement_history_array << {turn_count: turn.turn_count, movements: movement_array}
+
+    if unit.movement_history[turn.turn_count.to_s]
+      unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
+    else
+      unit.movement_history[turn.turn_count.to_s] = [{X: unit.coordinate_X , Y: unit.coordinate_Y}]
+    end
+
     unit.save
+
+    map_state
+  end
+
+  def self.process_unit_initial_positions(unit, turn, map_state)
+    map_state[unit.string_coordinates] = unit.uuid
+
+    if unit.movement_history[turn.turn_count.to_s]
+      unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
+    else
+      unit.movement_history[turn.turn_count.to_s] = [{X: unit.coordinate_X , Y: unit.coordinate_Y}]
+    end
+
+    unit.save
+
+    map_state
   end
 
 end

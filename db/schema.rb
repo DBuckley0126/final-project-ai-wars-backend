@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "join_user_colour"
     t.string "status", default: "LOBBY"
     t.integer "turn_count", default: 0
+    t.json "map_state", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["uuid"], name: "index_games_on_uuid", unique: true
@@ -61,6 +62,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.json "units_output_for_turn_array", default: [], null: false, array: true
     t.json "current_game_state"
     t.integer "turn_count"
+    t.json "map_states_for_turn", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_turns_on_game_id"
@@ -79,9 +81,12 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.integer "base_range"
     t.integer "base_melee"
     t.integer "base_vision"
+    t.integer "base_spawn_position"
+    t.boolean "error", default: false, null: false
+    t.boolean "cancelled", default: false, null: false
     t.json "data_set"
     t.json "error_history_array", default: [], null: false, array: true
-    t.json "movement_history_array", default: [], null: false, array: true
+    t.json "movement_history", default: {}, null: false
     t.bigint "uuid", null: false
     t.string "colour", null: false
     t.json "unit_output_history_array", default: [], null: false, array: true

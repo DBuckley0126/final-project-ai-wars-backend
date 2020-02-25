@@ -9,8 +9,8 @@ module DatabaseInputMachine
         spawner_data["spawner_errors"].each do |spawner_error|
           found_spawner.error_history_array << {turn_count: game.turn_count, error: spawner_error}
           found_spawner.save
-          found_spawner.check_for_fatal_errors_for_turn()
           found_spawner.check_for_warning_errors_for_turn()
+          found_spawner.check_for_fatal_errors_for_turn()
         end
       end
 
@@ -41,6 +41,8 @@ module DatabaseInputMachine
           # unit_to_be_processed.marshal_object = processed_unit["marshal_object"].force_encoding("ISO-8859-1").encode("UTF-8")
           unit_to_be_processed.marshal_object = processed_unit["marshal_object"]
           unit_to_be_processed.error_history_array << {turn_count: game.turn_count, error_array: processed_unit["errors"]}
+          unit_to_be_processed.check_for_warning_errors_for_turn()
+          unit_to_be_processed.check_for_fatal_errors_for_turn()
           unit_to_be_processed.save
         else
           raise StandardError("Issue creating/saving unit to Active Record")

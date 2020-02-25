@@ -135,7 +135,8 @@ module ProcessSpawnerMachine
       melee: {},
       range: {},
       vision: {},
-      movement: {}
+      movement: {},
+      spawn_position: {}
     }
 
     # For sending back when exception is rescued
@@ -144,7 +145,8 @@ module ProcessSpawnerMachine
       melee: {},
       range: {},
       vision: {},
-      movement: {}
+      movement: {},
+      spawn_position: {}
     }
 
     unit_error_array = []
@@ -157,6 +159,13 @@ module ProcessSpawnerMachine
       if object.respond_to? :movement
         test_results = DockerTestMachine.unit_movement_test(object.movement())
         complete_unit_return[:movement] = test_results[:hash_payload]
+        # Add test errors to unit array if any
+        test_results[:error_payload].each { |error| unit_error_array << error }
+      end
+
+      if object.respond_to? :spawn_position
+        test_results = DockerTestMachine.unit_spawn_position_test(object.spawn_position())
+        complete_unit_return[:spawn_position] = test_results[:hash_payload]
         # Add test errors to unit array if any
         test_results[:error_payload].each { |error| unit_error_array << error }
       end

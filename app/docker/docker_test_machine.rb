@@ -21,7 +21,7 @@ module DockerTestMachine
     end
 
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: {}}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
     end
 
     # REMOVES UNALLOWED KEYS FROM FIRST LEVEL 
@@ -60,7 +60,7 @@ module DockerTestMachine
     end
     
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: {}}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
     else
       return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
     end
@@ -94,7 +94,7 @@ module DockerTestMachine
 
     
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: {}}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
     else
       return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
     end
@@ -124,7 +124,41 @@ module DockerTestMachine
     end
     
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: {}}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
+    else
+      return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
+    end
+  end
+
+  def self.unit_spawn_position_test(returned_hash)
+    returned_hash_copy = returned_hash
+
+    if returned_hash == nil || !defined?(returned_hash)
+      returned_hash_copy = {}
+    end
+
+    error_array = []
+    critical_error = false
+
+    # REMOVES UNALLOWED KEYS FROM FIRST LEVEL 
+    filtered_returned_hash = returned_hash_copy.slice(:Y)
+    if filtered_returned_hash.length < returned_hash_copy.length
+      removed_keys_array = returned_hash_copy.merge(filtered_returned_hash) { |_k, v1, v2| v1 == v2 ? nil : :different }.compact.keys
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Range return hash contains unallowed keys, #{removed_keys_array} will be removed."}
+    end
+
+    case true
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:Y) && !filtered_returned_hash[:Y].is_a?(Integer)
+      filtered_returned_hash.delete(:Y)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Spawn Position return hash does not contain a valid Integer for [:Y]."}
+    
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:Y) && filtered_returned_hash[:Y].is_a?(Integer) && (filtered_returned_hash[:Y] > 50 || filtered_returned_hash[:Y] < 1)
+      filtered_returned_hash.delete(:Y)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Spawn Position return value #{filtered_returned_hash[:Y]} for [:Y] is not within the valid range of (1..50)."}
+    end
+    
+    if critical_error
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
     else
       return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
     end
@@ -154,7 +188,7 @@ module DockerTestMachine
     end
     
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: {}}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: {}}
     else
       return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
     end
@@ -185,7 +219,7 @@ module DockerTestMachine
 
     
     if critical_error
-      return {test_results: "FAIL", error_type: "Critical hash requirement", message: nil, error_payload: error_array, hash_payload: []}
+      return {test_results: "FAIL", error_type: "CRITICAL HASH REQUIREMENT", message: nil, error_payload: error_array, hash_payload: []}
     else
       return {test_results: "PASS", error_type: nil, message: nil, error_payload: error_array, hash_payload: filtered_returned_hash}
     end

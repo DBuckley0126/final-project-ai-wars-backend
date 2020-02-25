@@ -70,14 +70,29 @@ module CableHelperActions
           :base_movement, 
           :base_range, 
           :base_melee, 
-          :base_vision, 
+          :base_vision,
+          :base_spawn_position,
           :data_set, 
           :error_history_array, 
-          :movement_history_array, 
+          :movement_history, 
           :colour, 
           :unit_output_history_array, 
           :active, 
-          :new
+          :new,
+          :error, 
+          :cancelled
+        ]
+      } 
+    }
+
+    turn_serializer_options = { 
+      fields: { 
+        turn: [
+          :uuid, 
+          :turn_count,
+          :map_states_for_turn, 
+          :game, 
+          :user
         ]
       } 
     }
@@ -90,7 +105,8 @@ module CableHelperActions
       body: {
         game: GameSerializer.new(Game.get_for_turn(turn), game_serializer_options).serializable_hash,
         spawners: SpawnerSerializer.new(Spawner.get_for_turn(turn), spawners_serializer_options).serializable_hash,
-        units: UnitSerializer.new(Unit.get_for_turn(turn),unit_serializer_options).serializable_hash
+        units: UnitSerializer.new(Unit.get_for_turn(turn), unit_serializer_options).serializable_hash,
+        turn: TurnSerializer.new(turn, turn_serializer_options).serializable_hash
       }
     )
   end

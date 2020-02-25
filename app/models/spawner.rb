@@ -50,8 +50,9 @@ class Spawner < ApplicationRecord
       Spawner.where(game: turn.game)
     end
 
-    def check_for_fatal_errors_for_turn()
-      errors = self.error_history_array.any? { |error| error[:turn_count] === self.game.turn_count && error[:error]["test_result"] === "FAIL" }
+    def check_for_fatal_errors_for_turn
+
+      errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "FAIL" }
       if errors
         self.error = true
         self.cancelled = true
@@ -59,8 +60,9 @@ class Spawner < ApplicationRecord
       self.save
     end
 
-    def check_for_warning_errors_for_turn()
-      errors = self.error_history_array.any? { |error| error[:turn_count] === self.game.turn_count && error[:error]["test_result"] === "WARNING" }
+    def check_for_warning_errors_for_turn
+
+      errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "WARNING" }
       if errors
         self.error = true
       else
