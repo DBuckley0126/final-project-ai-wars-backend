@@ -161,9 +161,16 @@ module StateMachine
 
         # Checks if target coordinate position is taken
         if map_state[unit.target_coordinate_string]["contents"]
-          # Target position is unavailable, do not find new path, stay put, exit
-          unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
-          return
+          # Current target coordinate taken, find closest available new target
+          unit.find_new_target(map_state)
+          unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
+          unit.path_step_count = 0
+          next_string_coordinate = unit.current_path[unit.path_step_count]
+          if !next_string_coordinate
+            unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
+            unit.path_step_count = 0
+            return
+          end
         else
           # Target position is available, find new path
           unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
@@ -232,7 +239,6 @@ module StateMachine
       if target_X && target_Y && !(target_X == unit.coordinate_X && target_Y == unit.coordinate_Y)
 
         # Set current units current target path
-        binding.pry
         unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
         unit.path_step_count = 0
       else

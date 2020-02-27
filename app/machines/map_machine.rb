@@ -100,8 +100,79 @@ module MapMachine
       end
     end
 
-    return false
+    #If no spaces available next to target, begin second stage area cycling 
+    distance = 2
+    range = 4
 
+    searching = true
+
+    while searching
+      # Get lowest coordinate of search area
+      lowest_x = initial_target_x - distance
+      lowest_y = initial_target_y - distance
+
+      potential_target_coordinate_strings = []
+
+      generating = true
+      y_count = 0
+      x_count = 0
+
+      while generating
+        # Generate string from current position
+        x = lowest_x + x_count
+        y = lowest_y + y_count
+
+        potential_target_coordinate_strings << MapMachine.convert_xy_to_coordinate_string(x, y)
+
+        # Cycle through layers of area, creating strings, stopping at current range
+        if y_count == range
+          generating = false
+          y_count = 0
+          x_count = 0
+        elsif x_count == range
+          y_count += 1
+          x_count = 0
+        else
+          x_count += 1
+        end
+      end
+
+      # Check if unit is already next to target
+      potential_target_coordinate_strings.each do |coordinate_string|
+        if coordinate_string === current_coordinate_string
+          return coordinate_string
+        end
+      end
+
+      # Check potential strings created from area for being valid and not containing any contents
+      valid_coordinate_strings = []
+      potential_target_coordinate_strings.each do |coordinate_string|
+        # If valid position and empty, return and exit
+        if map_state[coordinate_string] && !map_state[coordinate_string]["contents"]
+          valid_coordinate_strings << coordinate_string
+        end
+      end
+
+      # Pick random coordinate string from array if one available
+      if valid_coordinate_strings.length >= 1
+        searching = false
+        return valid_coordinate_strings.sample
+      end
+
+      # Limit on positions generated
+      puts "LIMIT HIT!!!!!!!!!!"
+      if potential_target_coordinate_strings.length > 2000
+        return false
+      end
+
+      # Increase area
+      potential_target_coordinate_strings = []
+      range += 2
+      distance += 1
+
+    end
+
+    return false
   end
 
   def self.closest_available_y(map_state, string_coordinates)
