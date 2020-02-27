@@ -21,6 +21,89 @@ module MapMachine
     found_unit_coordinate
   end
 
+  def self.find_nearest_avilable_coordinate(map_state, current_coordinate_string, target_coordinate_string)
+    current_xy_hash = MapMachine.convert_string_to_coordinate_xy(current_coordinate_string)
+    target_xy_hash = MapMachine.convert_string_to_coordinate_xy(target_coordinate_string)
+
+    # Decide which side the unit is coming from
+
+    if current_xy_hash[:x] <= target_xy_hash[:x]
+      side = "host_user"
+    else
+      side = "join_user"
+    end
+
+    initial_target_x = target_xy_hash[:x]
+    initial_target_y = target_xy_hash[:y]
+
+    # Initial position
+    center = MapMachine.convert_xy_to_coordinate_string(initial_target_x, initial_target_y)
+
+    # North position
+    n_x = initial_target_x
+    n_y = initial_target_y + 1
+    n = MapMachine.convert_xy_to_coordinate_string(n_x, n_y)
+
+    # North East position
+    ne_x = initial_target_x + 1
+    ne_y = initial_target_y + 1
+    ne = MapMachine.convert_xy_to_coordinate_string(ne_x, ne_y)
+
+    # East position
+    e_x = initial_target_x + 1
+    e_y = initial_target_y
+    e = MapMachine.convert_xy_to_coordinate_string(e_x, e_y)
+
+    # South East position
+    se_x = initial_target_x + 1
+    se_y = initial_target_y - 1
+    se = MapMachine.convert_xy_to_coordinate_string(se_x, se_y)
+
+    # South position
+    s_x = initial_target_x 
+    s_y = initial_target_y - 1
+    s = MapMachine.convert_xy_to_coordinate_string(s_x, s_y)
+
+    # South West position
+    sw_x = initial_target_x - 1
+    sw_y = initial_target_y - 1
+    sw = MapMachine.convert_xy_to_coordinate_string(sw_x, sw_y)
+
+    # West position
+    w_x = initial_target_x - 1
+    w_y = initial_target_y
+    w = MapMachine.convert_xy_to_coordinate_string(w_x, w_y)
+
+    # North West position
+    nw_x = initial_target_x - 1
+    nw_y = initial_target_y + 1
+    nw = MapMachine.convert_xy_to_coordinate_string(nw_x, nw_y)    
+
+    # Adjust check order based on which side the unit was spawned
+    if side === "host_user"
+      position_check_priority = [center, w, sw, nw, s, n, se, ne, e]
+    else 
+      position_check_priority = [center, e, se, ne, s, n, sw, nw, w]
+    end
+
+    # Check if unit is already next to target
+    position_check_priority.each do |potential_target_coordinate_string|
+      if potential_target_coordinate_string === current_coordinate_string
+        return potential_target_coordinate_string
+      end
+    end
+    
+    # Check nearest coordinates for available space
+    position_check_priority.each do |potential_target_coordinate_string|
+      if map_state[potential_target_coordinate_string] && !map_state[potential_target_coordinate_string]["contents"]
+        return potential_target_coordinate_string
+      end
+    end
+
+    return false
+
+  end
+
   def self.closest_available_y(map_state, string_coordinates)
     xy_hash = MapMachine.convert_string_to_coordinate_xy(string_coordinates)
 
@@ -110,6 +193,7 @@ module MapMachine
 
     {x: x, y: y}
   end
+
 end
 
 

@@ -25,6 +25,37 @@ class Unit < ApplicationRecord
     units.each { |unit| unit.save! }
   end
 
+  def user_type
+    game = self.spawner.game
+
+    if self.user === game.host_user
+      return "host_user"
+    elsif self.user === game.join_user
+      return "join_user"
+    else
+      return false
+    end
+  end
+
+  def user
+    self.spawner.user
+  end
+
+  def find_new_target(map_state)
+    closest_coordinate_string = MapMachine.find_nearest_avilable_coordinate(map_state, self.string_coordinates, self.target_coordinate_string)
+    # If unit is already next to desired target, set target to current position
+    if closest_coordinate_string == self.string_coordinates
+      self.target_coordinate_string = closest_coordinate_string
+    # If target coordinate taken and has available space next to it  
+    elsif closest_coordinate_string
+      self.target_coordinate_string = closest_coordinate_string
+      self.add_error_for_turn({completed_cycle: false, error_type: "WARNING", error_message: "Target coordinate was unavailable, moved target to nearest available coordinate."})
+    # If target coordinate taken and no space available next to it
+    else 
+      self.add_error_for_turn({completed_cycle: false, error_type: "WARNING", error_message: "Target coordinate was unavailable and no available coordinates nearby"})
+    end
+  end
+
   def string_coordinates
     output_X_string = nil
     output_Y_string = nil
