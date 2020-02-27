@@ -22,7 +22,6 @@ module TurnMachine
       StateMachine.after_state_compiler(found_turn)
       StateMachine.game_state_processor(found_turn)
       CableHelperActions.update_game_of_turn(found_turn)
-      # CableHelperActions.update_game_instances
     else
       puts "SERVER_ERROR: UNABLE TO FIND TURN"
     end

@@ -21,6 +21,10 @@ class Unit < ApplicationRecord
     turn.game.units
   end
 
+  def self.save_collection(units)
+    units.each { |unit| unit.save! }
+  end
+
   def string_coordinates
     output_X_string = nil
     output_Y_string = nil
@@ -38,6 +42,16 @@ class Unit < ApplicationRecord
     end
 
     output_X_string + output_Y_string
+  end
+
+  def add_error_for_turn(error)
+    found_errors_for_turn = self.error_history_array.find { |error_turn| error_turn[:turn_count] === self.game.turn_count }
+    if found_errors_for_turn
+      found_errors_for_turn[:error_array] << error
+    else
+      self.error_history_array << {turn_count: game.turn_count, error_array: [error]}
+    end
+    self.save
   end
 
   def self.find_all_enemy_units(turn)
@@ -61,10 +75,11 @@ class Unit < ApplicationRecord
   end
 
   def check_for_fatal_errors_for_turn
-    errors = self.error_history_array.any? { |error_turn| error_turn[:turn_count] === self.game.turn_count && error_turn[:error_array].any? { |error| error["error_type"] === "CRITICAL HASH REQUIREMENT"} }
+    errors = self.error_history_array.any? { |error_turn| error_turn[:turn_count] === self.game.turn_count && error_turn[:error_array].any? { |error| error["error_type"] === "CRITICAL HASH REQUIREMENT" || error["error_type"] === "CRITICAL"} }
     if errors
       self.error = true
       self.cancelled = true
+      self.active = false
     end
     self.save
   end

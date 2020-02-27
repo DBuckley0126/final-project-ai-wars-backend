@@ -45,32 +45,31 @@ class Spawner < ApplicationRecord
         error_history_array: [{turn_count: game.turn_count, error: {test_results: test_object_2[:test_results], error_type: test_object_2[:error_type], message: test_object_2[:message]}}]
       )
     end
+  end
 
-    def self.get_for_turn(turn)
-      Spawner.where(game: turn.game)
+  def self.get_for_turn(turn)
+    Spawner.where(game: turn.game)
+  end
+
+  def check_for_fatal_errors_for_turn
+
+    errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "FAIL" }
+    if errors
+      self.error = true
+      self.cancelled = true
     end
+    self.save
+  end
 
-    def check_for_fatal_errors_for_turn
+  def check_for_warning_errors_for_turn
 
-      errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "FAIL" }
-      if errors
-        self.error = true
-        self.cancelled = true
-      end
-      self.save
+    errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "WARNING" }
+    if errors
+      self.error = true
+    else
+      self.error = false
     end
-
-    def check_for_warning_errors_for_turn
-
-      errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "WARNING" }
-      if errors
-        self.error = true
-      else
-        self.error = false
-      end
-      self.save
-    end
-
+    self.save
   end
 
 

@@ -81,7 +81,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.integer "base_range"
     t.integer "base_melee"
     t.integer "base_vision"
-    t.integer "base_spawn_position"
+    t.string "base_spawn_position"
     t.boolean "error", default: false, null: false
     t.boolean "cancelled", default: false, null: false
     t.json "data_set"
@@ -91,6 +91,9 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "colour", null: false
     t.json "unit_output_history_array", default: [], null: false, array: true
     t.boolean "new", null: false
+    t.json "current_path", default: [], null: false, array: true
+    t.string "target_coordinate_string"
+    t.integer "path_step_count", default: 0, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

@@ -1,5 +1,6 @@
 require 'json'
 require_relative './database_input_machine.rb'
+require_relative './path_finder_machine.rb'
 module StateMachine
   def self.before_state_compiler(user, game, turn)
     
@@ -26,33 +27,41 @@ module StateMachine
   end
 
   def self.game_state_processor(turn)
-    game = turn.game
-    user = turn.game
-    current_map_state = game.map_state
 
+    # Get latest friendly active units
     all_friendly_active_units = Unit.find_all_friendly_units(turn)
 
-    all_enemy_active_units = Unit.find_all_enemy_units(turn)
+    # all_enemy_active_units = Unit.find_all_enemy_units(turn)
 
     all_friendly_active_units.each do |unit|
       if unit.new
-        StateMachine.process_new_unit_state(unit)
+        StateMachine.process_new_unit_state(unit, turn)
       end
     end
+
+    # Get latest friendly active units
+    all_friendly_active_units = Unit.find_all_friendly_units(turn)
     
     11.times do |step_number|
-      returned_map_state = StateMachine.process_step(all_friendly_active_units, turn, step_number, current_map_state)
-      current_map_state = returned_map_state
-      turn.map_states_for_turn[step_number] = Game.game_state_to_array(returned_map_state)
+      StateMachine.process_step(all_friendly_active_units, turn, step_number)
+      turn.map_states_for_turn[step_number] = turn.game.map_state_to_array()
     end
 
-    game.map_state = current_map_state
+    # Check all processed units for errors
+    all_friendly_active_units.each do |unit|
+      unit.check_for_warning_errors_for_turn()
+      unit.check_for_fatal_errors_for_turn()
+    end
 
+
+    Unit.save_collection(all_friendly_active_units)
     turn.save
-    game.save
+    turn.game.save
   end
 
-  def self.process_new_unit_state(unit)
+  def self.process_new_unit_state(unit, turn)
+    map_state = turn.game.map_state
+
     unit.attribute_health = unit.spawner.skill_points["health"]
     unit.base_health = unit.spawner.skill_points["health"]
     unit.base_melee = unit.spawner.skill_points["melee"]
@@ -63,40 +72,125 @@ module StateMachine
 
     found_unit_output = unit.unit_output_history_array.first
     if found_unit_output && found_unit_output["output"]["spawn_position"] && found_unit_output["output"]["spawn_position"]["Y"] && found_unit_output["output"]["spawn_position"]["Y"].is_a?(Integer)
-      unit.base_spawn_position = found_unit_output["output"]["spawn_position"]["Y"]
       unit.coordinate_Y = unit.base_spawn_position
+      unit.base_spawn_position = unit.string_coordinates
+
+      # If target spawn position taken, find closest one, if none available, cancel unit
+
+      if map_state[unit.string_coordinates]["contents"]
+
+        closest_available_position = MapMachine.closest_available_y(map_state, unit.string_coordinates)
+
+        if closest_available_position
+          xy_hash = MapMachine.convert_string_to_coordinate_xy(closest_available_position)
+          unit.coordinate_X = xy_hash[:x]
+          unit.coordinate_Y = xy_hash[:y]
+          MapMachine.update_position(map_state, unit.string_coordinates, unit.uuid)
+          unit.add_error_for_turn({completed_cycle: true, error_type: "WARNING", error_message: "Target spawn position was not available"})
+        else
+          unit.base_spawn_position = nil
+          unit.coordinate_X = nil
+          unit.coordinate_Y = nil
+          unit.error = true
+          unit.cancelled = true
+          unit.active = false
+          unit.add_error_for_turn({completed_cycle: false, error_type: "CRITICAL", error_message: "No spawn positions was not available"})
+        end
+
+      # Target spawn position availiable, add to map
+      else
+        MapMachine.update_position(map_state, unit.string_coordinates, unit.uuid)
+      end
     else
+      # No target spawn position returned, pick random one, if all positions taken up
       unit.base_spawn_position = nil
-      unit.coordinate_Y = rand(1..50)
+      available_position = MapMachine.any_available_y(map_state, unit.coordinate_X)
+
+      if available_position
+        xy_hash = MapMachine.convert_string_to_coordinate_xy(available_position)
+        unit.coordinate_X = xy_hash[:x]
+        unit.coordinate_Y = xy_hash[:y]
+        MapMachine.update_position(map_state, unit.string_coordinates, unit.uuid)
+      else
+        unit.coordinate_X = nil
+        unit.coordinate_Y = nil
+        unit.error = true
+        unit.cancelled = true
+        unit.active = false
+        unit.add_error_for_turn({completed_cycle: false, error_type: "CRITICAL", error_message: "No spawn positions was not available"})
+      end
     end
-    
+
     unit.new = false
     unit.save
   end
 
-  def self.process_step(freindly_units, turn, step_number, map_state)
+  def self.process_step(freindly_units, turn, step_number)
     # complete path finding of unit if under movement limit
 
     if step_number === 0
       freindly_units.each do |unit|
-        map_state = StateMachine.process_unit_initial_positions(unit, turn, map_state)
+        StateMachine.process_unit_initial_positions(unit, turn)
+      end
+      freindly_units.each do |unit|
+        StateMachine.process_unit_initial_path(unit, turn)
       end
     else
       freindly_units.each do |unit|
         if step_number <= unit.base_movement
-          map_state = StateMachine.process_unit_movement(unit, turn, map_state)
+          StateMachine.process_unit_movement(unit, turn)
         end
       end
     end
 
-    map_state
   end
 
-  def self.process_unit_movement(unit, turn, map_state)
-    found_unit_output = unit.unit_output_history_array.find { |unit_output| unit_output["turn_count"] === turn.turn_count }
-    
+  def self.process_unit_movement(unit, turn)
+    map_state = turn.game.map_state
 
-    # Does basic checks on unit desired movement output
+    # Unit potential next position given from path
+    next_string_coordinate = unit.current_path[unit.path_step_count]
+
+    # Unit has path position to go to. If next_string_coordinate is nil, means unit is currently at destination or no path can be found to target
+    if next_string_coordinate
+
+      # Check if next position is taken up by any unit or obstacle
+
+      while map_state[next_string_coordinate]["contents"] && unit.target_coordinate_string
+        unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
+        unit.path_step_count = 0
+        next_string_coordinate = unit.current_path[unit.path_step_count]
+      end
+
+      # Remove units current location from map
+      MapMachine.update_position(map_state, unit.string_coordinates, nil)
+
+      xy_hash = MapMachine.convert_string_to_coordinate_xy(next_string_coordinate)
+
+      # Move unit to current location
+      unit.coordinate_X = xy_hash[:x]
+      unit.coordinate_Y = xy_hash[:y]
+
+      MapMachine.update_position(map_state, unit.string_coordinates, unit.uuid)
+    end
+
+    unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
+    unit.path_step_count += 1
+  end
+
+  def self.process_unit_initial_positions(unit, turn)
+    map_state = turn.game.map_state
+
+    MapMachine.update_position(map_state, unit.string_coordinates, unit.uuid)
+
+    unit.movement_history[turn.turn_count.to_s] = [{X: unit.coordinate_X , Y: unit.coordinate_Y}]
+ 
+  end
+
+  def self.process_unit_initial_path(unit, turn)
+    map_state = turn.game.map_state
+    found_unit_output = unit.unit_output_history_array.find { |unit_output| unit_output["turn_count"] === turn.turn_count }
+
     if found_unit_output && 
       found_unit_output["output"]["movement"] && 
       found_unit_output["output"]["movement"]["target"] && 
@@ -105,66 +199,25 @@ module StateMachine
 
       target_X = found_unit_output["output"]["movement"]["target"]["X"]
       target_Y = found_unit_output["output"]["movement"]["target"]["Y"]
-      current_X = unit.coordinate_X
-      current_Y = unit.coordinate_Y
 
-      if target_X && target_Y && current_X && current_Y
-        #Begin movement
+      if target_X && target_Y && !(target_X == unit.coordinate_X && target_Y == unit.coordinate_Y)
+        unit.target_coordinate_string = MapMachine.convert_xy_to_coordinate_string(target_X, target_Y)
 
-        #Check if arrived at target_X
-        if current_X != target_X
-          #Checks if target is higher or lower than current
-          if current_X < target_X
-            current_X = current_X + 1
-          end
-          if current_X > target_X
-            current_X = current_X - 1
-          end
-        end
-
-        #Check if arrived at target_Y
-        if current_Y != target_Y
-          #Checks if target is higher or lower than current
-          if current_Y < target_Y
-            current_Y = current_Y + 1
-          end
-          if current_Y > target_Y
-            current_Y = current_Y - 1
-          end
-        end
-
-        map_state[unit.string_coordinates] = nil
-
-        unit.coordinate_X = current_X
-        unit.coordinate_Y = current_Y
-
-        map_state[unit.string_coordinates] = unit.uuid
+        # Set current units current target path
+        unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
+        unit.path_step_count = 0
+      else
+        # Unit is already at targte coordinate, no path needed
+        unit.current_path = []
+        unit.target_coordinate_string = MapMachine.convert_xy_to_coordinate_string(target_X, target_Y)
+        unit.path_step_count = 0
       end
-    end
-
-    if unit.movement_history[turn.turn_count.to_s]
-      unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
     else
-      unit.movement_history[turn.turn_count.to_s] = [{X: unit.coordinate_X , Y: unit.coordinate_Y}]
+      #If no valid unit output for returned movement target, reset path and unit target
+      unit.current_path = []
+      unit.target_coordinate_string = nil
+      unit.path_step_count = 0
     end
-
-    unit.save
-
-    map_state
-  end
-
-  def self.process_unit_initial_positions(unit, turn, map_state)
-    map_state[unit.string_coordinates] = unit.uuid
-
-    if unit.movement_history[turn.turn_count.to_s]
-      unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
-    else
-      unit.movement_history[turn.turn_count.to_s] = [{X: unit.coordinate_X , Y: unit.coordinate_Y}]
-    end
-
-    unit.save
-
-    map_state
   end
 
 end

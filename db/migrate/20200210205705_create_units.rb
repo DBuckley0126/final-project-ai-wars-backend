@@ -12,7 +12,7 @@ class CreateUnits < ActiveRecord::Migration[6.0]
       t.integer :base_range
       t.integer :base_melee
       t.integer :base_vision
-      t.integer :base_spawn_position
+      t.string :base_spawn_position
       t.boolean :error, default: false, null: false
       t.boolean :cancelled, default: false, null: false
       t.json :data_set
@@ -22,6 +22,9 @@ class CreateUnits < ActiveRecord::Migration[6.0]
       t.string :colour, null: false
       t.json :unit_output_history_array, array: true, default: [], null: false
       t.boolean :new, null: false
+      t.json :current_path, array: true, default: [], null: false
+      t.string :target_coordinate_string
+      t.integer :path_step_count, default: 0, null: false
 
       t.index :uuid, unique: true
       t.timestamps

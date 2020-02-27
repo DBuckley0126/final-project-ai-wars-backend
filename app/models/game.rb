@@ -1,4 +1,6 @@
 require_relative '../../app/channels/broadcast_actions/cable_helper_actions.rb'
+require_relative '../../app/machines/map_machine.rb'
+
 
 class Game < ApplicationRecord
   belongs_to :host_user, :polymorphic => true
@@ -64,10 +66,10 @@ class Game < ApplicationRecord
     self.uuid = SecureRandom.uuid
   end
 
-  def self.game_state_to_array(game_state)
+  def map_state_to_array()
     output_array = []
-    game_state.each do |key, value|
-      output_array.push({c: key, u: value})
+    self.map_state.each do |key, value|
+      output_array.push({xy: key, c: value["contents"]})
     end
     output_array
   end
@@ -81,26 +83,7 @@ class Game < ApplicationRecord
   end
 
   def set_initial_map_state
-    initial_map_state = {}
-
-    current_Y = 101
-    current_X = 101
-    
-    2500.times do
-      if current_X === 151
-        current_Y += 1
-        current_X = 101
-      end
-    
-      key = current_X.to_s.slice(1,3) + current_Y.to_s.slice(1,3)
-      initial_map_state[key] = nil
-    
-      current_X += 1
-    
-    end
-
-    self.map_state = initial_map_state
-    self.save
+    self.map_state = MapMachine.generate_new_map()
   end
 
   
