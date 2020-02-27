@@ -5,7 +5,7 @@ class Unit < ApplicationRecord
   def self.find_all_friendly_units(turn)
     game = turn.game
     user = turn.user
-    all_active_units = Unit.where( active: true)
+    all_active_units = Unit.where( active: true).order(:id)
 
     friendly_output_array = []
 

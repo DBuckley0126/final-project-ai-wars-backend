@@ -39,12 +39,13 @@ class Node
   end
   
   # Gets potential neighbors, checks map for contents
-  def near(map_state)
+  def near(node_map)
     output_nodes = []
     
     potential_neighbor_strings().each do |coordinate_string|
-      if !map_state[coordinate_string]["contents"]
-        output_nodes << map_state[coordinate_string][:node]
+
+      if !node_map[coordinate_string][:contents]
+        output_nodes << node_map[coordinate_string][:node]
       end
     end
 

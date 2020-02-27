@@ -47,6 +47,7 @@ module StateMachine
       turn.map_states_for_turn[step_number] = turn.game.map_state_to_array()
     end
 
+
     # Check all processed units for errors
     all_friendly_active_units.each do |unit|
       unit.check_for_warning_errors_for_turn()
@@ -72,7 +73,7 @@ module StateMachine
 
     found_unit_output = unit.unit_output_history_array.first
     if found_unit_output && found_unit_output["output"]["spawn_position"] && found_unit_output["output"]["spawn_position"]["Y"] && found_unit_output["output"]["spawn_position"]["Y"].is_a?(Integer)
-      unit.coordinate_Y = unit.base_spawn_position
+      unit.coordinate_Y = found_unit_output["output"]["spawn_position"]["Y"]
       unit.base_spawn_position = unit.string_coordinates
 
       # If target spawn position taken, find closest one, if none available, cancel unit
@@ -155,11 +156,16 @@ module StateMachine
     if next_string_coordinate
 
       # Check if next position is taken up by any unit or obstacle
-
       while map_state[next_string_coordinate]["contents"] && unit.target_coordinate_string
         unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
         unit.path_step_count = 0
         next_string_coordinate = unit.current_path[unit.path_step_count]
+        # If no new path found, add current position to unit movement history and exit
+        if !next_string_coordinate
+          unit.movement_history[turn.turn_count.to_s] << {X: unit.coordinate_X , Y: unit.coordinate_Y}
+          unit.path_step_count += 1
+          return
+        end
       end
 
       # Remove units current location from map
@@ -200,16 +206,16 @@ module StateMachine
       target_X = found_unit_output["output"]["movement"]["target"]["X"]
       target_Y = found_unit_output["output"]["movement"]["target"]["Y"]
 
+      unit.target_coordinate_string = MapMachine.convert_xy_to_coordinate_string(target_X, target_Y)
+
       if target_X && target_Y && !(target_X == unit.coordinate_X && target_Y == unit.coordinate_Y)
-        unit.target_coordinate_string = MapMachine.convert_xy_to_coordinate_string(target_X, target_Y)
 
         # Set current units current target path
         unit.current_path = PathFinderMachine.search(unit.string_coordinates, unit.target_coordinate_string, map_state)
         unit.path_step_count = 0
       else
-        # Unit is already at targte coordinate, no path needed
+        # Unit is already at target coordinate, no path needed
         unit.current_path = []
-        unit.target_coordinate_string = MapMachine.convert_xy_to_coordinate_string(target_X, target_Y)
         unit.path_step_count = 0
       end
     else
