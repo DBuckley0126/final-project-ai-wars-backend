@@ -27,80 +27,128 @@ module MapMachine
 
     # Decide which side the unit is coming from
 
-    if current_xy_hash[:x] <= target_xy_hash[:x]
-      side = "host_user"
-    else
-      side = "join_user"
-    end
+    # if current_xy_hash[:x] <= target_xy_hash[:x]
+    #   side = "host_user"
+    # else
+    #   side = "join_user"
+    # end
+
+
 
     initial_target_x = target_xy_hash[:x]
     initial_target_y = target_xy_hash[:y]
 
+    first_level_coordinate_strings = {}
+    core_level_coordinate_strings = {}
+
     # Initial position
     center = MapMachine.convert_xy_to_coordinate_string(initial_target_x, initial_target_y)
+    center_distance = MapMachine.distance(current_coordinate_string, center)
+    first_level_coordinate_strings[center] = center_distance
+    core_level_coordinate_strings[center] = center_distance
 
     # North position
     n_x = initial_target_x
     n_y = initial_target_y + 1
     n = MapMachine.convert_xy_to_coordinate_string(n_x, n_y)
+    n_distance = MapMachine.distance(current_coordinate_string, n)
+    first_level_coordinate_strings[n] = n_distance
+    core_level_coordinate_strings[n] = n_distance
 
     # North East position
     ne_x = initial_target_x + 1
     ne_y = initial_target_y + 1
     ne = MapMachine.convert_xy_to_coordinate_string(ne_x, ne_y)
+    ne_distance = MapMachine.distance(current_coordinate_string, ne)
+    first_level_coordinate_strings[ne] = ne_distance
+
 
     # East position
     e_x = initial_target_x + 1
     e_y = initial_target_y
     e = MapMachine.convert_xy_to_coordinate_string(e_x, e_y)
+    e_distance = MapMachine.distance(current_coordinate_string, e)
+    first_level_coordinate_strings[e] = e_distance
+    core_level_coordinate_strings[e] = e_distance
+
 
     # South East position
     se_x = initial_target_x + 1
     se_y = initial_target_y - 1
     se = MapMachine.convert_xy_to_coordinate_string(se_x, se_y)
+    se_distance = MapMachine.distance(current_coordinate_string, se)
+    first_level_coordinate_strings[se] = se_distance
 
     # South position
     s_x = initial_target_x 
     s_y = initial_target_y - 1
     s = MapMachine.convert_xy_to_coordinate_string(s_x, s_y)
+    s_distance = MapMachine.distance(current_coordinate_string, s)
+    first_level_coordinate_strings[s] = s_distance
+    core_level_coordinate_strings[s] = s_distance
 
     # South West position
     sw_x = initial_target_x - 1
     sw_y = initial_target_y - 1
     sw = MapMachine.convert_xy_to_coordinate_string(sw_x, sw_y)
+    sw_distance = MapMachine.distance(current_coordinate_string, sw)
+    first_level_coordinate_strings[sw] = sw_distance
+
 
     # West position
     w_x = initial_target_x - 1
     w_y = initial_target_y
     w = MapMachine.convert_xy_to_coordinate_string(w_x, w_y)
+    w_distance = MapMachine.distance(current_coordinate_string, w)
+    first_level_coordinate_strings[w] = w_distance
+    core_level_coordinate_strings[w] = w_distance
 
     # North West position
     nw_x = initial_target_x - 1
     nw_y = initial_target_y + 1
-    nw = MapMachine.convert_xy_to_coordinate_string(nw_x, nw_y)    
+    nw = MapMachine.convert_xy_to_coordinate_string(nw_x, nw_y) 
+    nw_distance = MapMachine.distance(current_coordinate_string, nw)
+    first_level_coordinate_strings[nw] = nw_distance
 
-    # Adjust check order based on which side the unit was spawned
-    if side === "host_user"
-      position_check_priority = [center, w, sw, nw, s, n, se, ne, e]
-    else 
-      position_check_priority = [center, e, se, ne, s, n, sw, nw, w]
-    end
+    # Sort distances into ascending order for first level(N, NE, E, SE, S, SW, W, NW)
+    first_level_sorted_array = first_level_coordinate_strings.sort_by {|k, v| v}
+    first_level_sorted_hash = first_level_sorted_array.to_h
+    first_level_position_check_priority = first_level_sorted_hash.keys
 
-    # Check if unit is already next to target
-    position_check_priority.each do |potential_target_coordinate_string|
+    # Sort distances into ascending order for core level(N, E, S, W)
+    core_level_sorted_array = core_level_coordinate_strings.sort_by {|k, v| v}
+    core_level_sorted_hash = core_level_sorted_array.to_h
+    core_level_position_check_priority = core_level_sorted_hash.keys
+
+    # Check if unit is already at core level(N, E, S, W)
+    core_level_position_check_priority.each do |potential_target_coordinate_string|
       if potential_target_coordinate_string === current_coordinate_string
         return potential_target_coordinate_string
       end
-    end
-    
-    # Check nearest coordinates for available space
-    position_check_priority.each do |potential_target_coordinate_string|
+    end    
+
+    # Check nearest coordinates for available space at core level(N, E, S, W)
+    core_level_position_check_priority.each do |potential_target_coordinate_string|
       if map_state[potential_target_coordinate_string] && !map_state[potential_target_coordinate_string]["contents"]
         return potential_target_coordinate_string
       end
     end
 
-    #If no spaces available next to target, begin second stage area cycling 
+    # Check if unit is already at first level(N, NE, E, SE, S, SW, W, NW)
+    first_level_position_check_priority.each do |potential_target_coordinate_string|
+      if potential_target_coordinate_string === current_coordinate_string
+        return potential_target_coordinate_string
+      end
+    end    
+    
+    # Check nearest coordinates for available space at first level(N, NE, E, SE, S, SW, W, NW)
+    first_level_position_check_priority.each do |potential_target_coordinate_string|
+      if map_state[potential_target_coordinate_string] && !map_state[potential_target_coordinate_string]["contents"]
+        return potential_target_coordinate_string
+      end
+    end
+
+    #If no spaces available at first level, begin second stage area cycling 
     distance = 2
     range = 4
 
@@ -153,10 +201,23 @@ module MapMachine
         end
       end
 
-      # Pick random coordinate string from array if one available
-      if valid_coordinate_strings.length >= 1
-        searching = false
-        return valid_coordinate_strings.sample
+      # Calculate distances for valid empty string coordinates
+      coordinate_string_distances_hash = {}
+      valid_coordinate_strings.each do |potential_coordinate_string|
+        distance = MapMachine.distance(current_coordinate_string, potential_coordinate_string)
+        coordinate_string_distances_hash[potential_coordinate_string] = distance
+      end
+
+      # Sort distances in ascending order
+      outer_level_sorted_array = coordinate_string_distances_hash.sort_by {|k, v| v}
+      outer_level_sorted_hash = outer_level_sorted_array.to_h
+      outer_level_position_priority = outer_level_sorted_hash.keys
+
+      # Return nearest available coordinate position
+      outer_level_position_priority.each do |potential_target_coordinate_string|
+        if map_state[potential_target_coordinate_string] && !map_state[potential_target_coordinate_string]["contents"]
+          return potential_target_coordinate_string
+        end
       end
 
       # Limit on positions generated
@@ -219,6 +280,16 @@ module MapMachine
     end
 
     MapMachine.closest_available_y(map_state, coordinate_string)
+  end
+
+  def self.distance(current_coordinate_string, target_coordinate_string)
+    current_xy_hash = MapMachine.convert_string_to_coordinate_xy(current_coordinate_string)
+    target_xy_hash = MapMachine.convert_string_to_coordinate_xy(target_coordinate_string)
+
+    return (
+      (current_xy_hash[:x] - target_xy_hash[:x]) ** 2 +
+      (current_xy_hash[:y] - target_xy_hash[:y]) ** 2
+    ) ** (0.5)
   end
   
   def self.generate_new_map
