@@ -80,7 +80,10 @@ module CableHelperActions
           :active, 
           :new,
           :error, 
-          :cancelled
+          :cancelled,
+          :current_path,
+          :target_coordinate_string,
+          :path_step_count
         ]
       } 
     }
