@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.boolean "cancelled", default: false, null: false
     t.json "error_history_array", default: [], null: false, array: true
     t.string "spawner_name", default: "Unit", null: false
+    t.boolean "obstacle_spawner", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_spawners_on_game_id"
@@ -62,6 +63,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.json "units_output_for_turn_array", default: [], null: false, array: true
     t.json "current_game_state"
     t.integer "turn_count"
+    t.integer "step_count", default: 0, null: false
     t.json "map_states_for_turn", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -71,7 +73,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
 
   create_table "units", force: :cascade do |t|
     t.bigint "spawner_id", null: false
-    t.binary "marshal_object", null: false
+    t.binary "marshal_object"
     t.boolean "active", default: true
     t.integer "attribute_health"
     t.integer "coordinate_Y"
@@ -94,6 +96,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.json "current_path", default: [], null: false, array: true
     t.string "target_coordinate_string"
     t.integer "path_step_count", default: 0, null: false
+    t.boolean "obstacle", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

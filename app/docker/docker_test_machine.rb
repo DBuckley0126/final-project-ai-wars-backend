@@ -87,7 +87,7 @@ module DockerTestMachine
 
     case true 
 
-    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["forward", "backwards", "left", "right"].include?(filtered_returned_hash[:direction])
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["NORTH", "SOUTH", "EAST", "WEST"].include?(filtered_returned_hash[:direction])
       filtered_returned_hash.delete(:direction, :attack, :damage_limit)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Melee return hash does not contain a valid direction within [:direction]."}
     end
@@ -118,7 +118,7 @@ module DockerTestMachine
     end
 
     case true
-    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["forward", "backwards", "left", "right"].include?(filtered_returned_hash[:direction])
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["NORTH", "SOUTH", "EAST", "WEST"].include?(filtered_returned_hash[:direction])
       filtered_returned_hash.delete(:direction)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Range return hash does not contain a valid direction within [:direction]."}
     end

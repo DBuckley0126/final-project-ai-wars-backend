@@ -51,6 +51,7 @@ class Spawner < ApplicationRecord
     Spawner.where(game: turn.game)
   end
 
+
   def check_for_fatal_errors_for_turn
 
     errors = self.error_history_array.any? { |error| error["turn_count"] === self.game.turn_count && error["error"]["test_results"] === "FAIL" }

@@ -100,13 +100,19 @@ module GameOverseerChannelLobbyMethods
         else
           found_lobby.join_user_ready = payload["readyStatus"]
         end
-        
-      end
-      found_lobby.save
-
-      CableHelperActions.update_game_lobby(found_lobby)
+      end  
     end
 
+    if payload["teamColour"]
+      if found_lobby.host_user === user
+        found_lobby.host_user_colour = payload["teamColour"]
+      elsif found_lobby.join_user === user
+        found_lobby.join_user_colour = payload["teamColour"]
+      end 
+    end
+
+    found_lobby.save
+    CableHelperActions.update_game_lobby(found_lobby)
   end
 
   def start_game_request
@@ -117,20 +123,10 @@ module GameOverseerChannelLobbyMethods
       return
     end
 
-    #TEMPORARY CHANGE TO JOIN_USER, CHANGE BACK!!!
-    if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.join_user === user
-      found_lobby.game_initiated = true
-      found_lobby.status = "IN_GAME"
-      found_lobby.save
+    if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.host_user === user
+      found_lobby.init_game
 
-      ActionCable.server.broadcast("game_channel_##{found_lobby.uuid}", 
-        channel: "game_channel_##{found_lobby.uuid}", 
-        type: "start_game",
-        action: "START_GAME",
-        header: {},
-        body: {}
-      )
-
+      CableHelperActions.init_game(found_lobby)
       CableHelperActions.update_game_instances()
     else 
       return
@@ -160,10 +156,10 @@ module GameOverseerChannelLobbyMethods
     if found_lobby && found_lobby.game_initiated
         found_lobby.status = "CANCELED_GAME"
         # TEST PURPOSES DELETE AFTER
-        found_lobby.status = "LOBBY"
-        found_lobby.join_user = nil
-        found_lobby.join_user_type = nil
-        found_lobby.game_initiated = false
+        # found_lobby.status = "LOBBY"
+        # found_lobby.join_user = nil
+        # found_lobby.join_user_type = nil
+        # found_lobby.game_initiated = false
         #DELETE BETWEEN
         found_lobby.save
 

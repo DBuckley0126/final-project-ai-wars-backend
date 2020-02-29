@@ -1,14 +1,81 @@
 require_relative "../lib/classes/node.rb"
 
 module MapMachine
-  def self.reset_nodes(map_state)
-    map_state.each do |coordinate, value|
-      value[:node].reset()
-    end
-  end
   
   def self.update_position(map_state, string_coordinates, contents)
     map_state[string_coordinates]["contents"] = contents
+  end
+
+  def self.reset_effects(map_state)
+    map_state.each do |coordinate_key, value|
+      map_state[coordinate_key]["effect"] = 0
+    end
+  end
+
+  def self.get_relative_string_coordinate(current_coordinate_string, direction, distance)
+    current_xy_hash = MapMachine.convert_string_to_coordinate_xy(current_coordinate_string)
+    initial_target_x = current_xy_hash[:x]
+    initial_target_y = current_xy_hash[:y]
+
+    # North position
+    n_x = initial_target_x
+    n_y = initial_target_y + distance
+    n = MapMachine.convert_xy_to_coordinate_string(n_x, n_y)
+
+    # North East position
+    ne_x = initial_target_x + distance
+    ne_y = initial_target_y + distance
+    ne = MapMachine.convert_xy_to_coordinate_string(ne_x, ne_y)
+
+    # East position
+    e_x = initial_target_x + distance
+    e_y = initial_target_y
+    e = MapMachine.convert_xy_to_coordinate_string(e_x, e_y)
+
+    # South East position
+    se_x = initial_target_x + distance
+    se_y = initial_target_y - distance
+    se = MapMachine.convert_xy_to_coordinate_string(se_x, se_y)
+
+    # South position
+    s_x = initial_target_x 
+    s_y = initial_target_y - distance
+    s = MapMachine.convert_xy_to_coordinate_string(s_x, s_y)
+
+    # South West position
+    sw_x = initial_target_x - distance
+    sw_y = initial_target_y - distance
+    sw = MapMachine.convert_xy_to_coordinate_string(sw_x, sw_y)
+
+    # West position
+    w_x = initial_target_x - distance
+    w_y = initial_target_y
+    w = MapMachine.convert_xy_to_coordinate_string(w_x, w_y)
+
+    # North West position
+    nw_x = initial_target_x - distance
+    nw_y = initial_target_y + distance
+    nw = MapMachine.convert_xy_to_coordinate_string(nw_x, nw_y) 
+
+    case true
+    when direction === "NORTH"
+      return n
+    when direction === "NORTH_EAST"
+      return ne
+    when direction === "EAST"
+      return e 
+    when direction === "SOUTH_EAST"
+      return se 
+    when direction === "SOUTH"
+      return s
+    when direction === "SOUTH_WEST"
+      return sw
+    when direction === "WEST"
+      return w
+    when direction === "NORTH_WEST"
+      return nw                          
+    end
+
   end
 
   def self.find_unit_in_map(map_state, unit)
@@ -22,18 +89,7 @@ module MapMachine
   end
 
   def self.find_nearest_avilable_coordinate(map_state, current_coordinate_string, target_coordinate_string)
-    current_xy_hash = MapMachine.convert_string_to_coordinate_xy(current_coordinate_string)
     target_xy_hash = MapMachine.convert_string_to_coordinate_xy(target_coordinate_string)
-
-    # Decide which side the unit is coming from
-
-    # if current_xy_hash[:x] <= target_xy_hash[:x]
-    #   side = "host_user"
-    # else
-    #   side = "join_user"
-    # end
-
-
 
     initial_target_x = target_xy_hash[:x]
     initial_target_y = target_xy_hash[:y]
@@ -292,7 +348,7 @@ module MapMachine
     ) ** (0.5)
   end
   
-  def self.generate_new_map
+  def self.generate_new_map(game)
     initial_map_state = {}
     
     current_Y = 101
@@ -306,10 +362,20 @@ module MapMachine
     
       key = current_X.to_s.slice(1,3) + current_Y.to_s.slice(1,3)
     
-      initial_map_state[key] = {contents: nil}
+      initial_map_state[key] = {contents: nil, effect: 0}
     
       current_X += 1
     end
+
+    # Create obstacle spawner
+    computer_ai_user = User.find_by(sub: "backend|5e45d67f1ba0ebb439e98")
+    obstacle_spawner = Spawner.create(game: game, spawner_name: "OBSTACLE" , passed_initial_test: true, obstacle_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
+    
+    # Create obstacles
+    coordinate_string = "2525"
+    xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
+    obstacle_unit = Unit.create(spawner: obstacle_spawner, attribute_health: 10, coordinate_Y: xy_hash[:Y], coordinate_X: xy_hash[:X], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, obstacle: true)
+    initial_map_state[coordinate_string]["contents"] = obstacle_unit.uuid
     
     initial_map_state
   end

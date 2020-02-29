@@ -17,8 +17,16 @@ class Unit < ApplicationRecord
     friendly_output_array
   end
 
+  def self.create_obstacle_unit(spawner, coordinate_string)
+
+  end
+
   def self.get_for_turn(turn)
     turn.game.units
+  end
+
+  def self.find_by_uuid(uuid)
+    Unit.find_by(uuid: uuid)
   end
 
   def self.save_collection(units)
@@ -35,6 +43,23 @@ class Unit < ApplicationRecord
     else
       return false
     end
+  end
+
+  def damage(amount)
+    self.attribute_health -= amount
+    if self.attribute_health <= 0
+      self.deactivate
+    end
+    self.save
+  end
+
+  def deactivate
+    map_state = self.spawner.game.map_state
+
+    self.active = false
+    map_state[self.string_coordinates]["contents"] = 0
+
+    self.save
   end
 
   def user

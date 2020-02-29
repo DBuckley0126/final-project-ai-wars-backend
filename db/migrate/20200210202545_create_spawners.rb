@@ -12,6 +12,7 @@ class CreateSpawners < ActiveRecord::Migration[6.0]
       t.boolean :cancelled, default: false, null: false
       t.json :error_history_array, array: true, default: [], null: false
       t.string :spawner_name, default: "Unit", null: false
+      t.boolean :obstacle_spawner, default: false, null: false
       t.timestamps
     end
   end

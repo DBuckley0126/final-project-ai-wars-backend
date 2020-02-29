@@ -13,7 +13,11 @@ module GameOverseerChannelGameMethods
       return
     end
 
-    TurnMachine.new_turn(user, found_game, turn_payload)
+    if found_game.turn_count % 2 === 0 && found_game.join_user === user
+      TurnMachine.new_turn(user, found_game, turn_payload)
+    elsif found_game.turn_count % 2 != 0 && found_game.host_user === user
+      TurnMachine.new_turn(user, found_game, turn_payload)
+    end
 
   end
 end

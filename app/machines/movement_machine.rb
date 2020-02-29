@@ -8,13 +8,8 @@ module MovementMachine
 
     11.times do |step_number|
       MovementMachine.process_step(all_friendly_active_units, turn, step_number)
-      turn.map_states_for_turn[step_number] = turn.game.map_state_to_array()
-    end
-
-    # Check all processed units for errors
-    all_friendly_active_units.each do |unit|
-      unit.check_for_warning_errors_for_turn()
-      unit.check_for_fatal_errors_for_turn()
+      turn.map_states_for_turn[turn.step_count] = turn.game.map_state_to_array()
+      turn.step_count += 1
     end
 
     # Save all processed units

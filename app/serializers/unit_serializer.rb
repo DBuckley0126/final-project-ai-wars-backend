@@ -25,5 +25,6 @@ class UnitSerializer
   :cancelled, 
   :current_path, 
   :target_coordinate_string,
-  :path_step_count
+  :path_step_count,
+  :obstacle
 end
