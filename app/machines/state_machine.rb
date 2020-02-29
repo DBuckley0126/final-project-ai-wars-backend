@@ -8,6 +8,7 @@ module StateMachine
   def self.before_state_compiler(user, game, turn)
     
     related_spawners = Spawner.where(user: user, game: game)
+
     json = SpawnerSerializer.new(related_spawners).serialized_json
 
     # A docker ARG variable will be inserted into the .new_turn method as an agument.
@@ -41,8 +42,8 @@ module StateMachine
       end
     end
     
-    MovementMachine.process_unit_positions(turn)
-    # MeleeMachine.process_unit_melee_attack(turn)
+    MovementMachine.process_units_position_action(turn)
+    MeleeMachine.process_units_melee_action(turn)
 
     # Check all processed units for errors
     all_friendly_active_units.each do |unit|

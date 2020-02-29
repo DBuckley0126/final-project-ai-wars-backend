@@ -79,17 +79,22 @@ module DockerTestMachine
     critical_error = false
 
     # REMOVES UNALLOWED KEYS FROM FIRST LEVEL 
-    filtered_returned_hash = returned_hash_copy.slice(:direction)
+    filtered_returned_hash = returned_hash_copy.slice(:direction, :attack, :damage_limit)
     if filtered_returned_hash.length < returned_hash_copy.length
       removed_keys_array = returned_hash_copy.merge(filtered_returned_hash) { |_k, v1, v2| v1 == v2 ? nil : :different }.compact.keys
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Melee return hash contains unallowed keys, #{removed_keys_array} will be removed."}
     end
 
     case true 
-
     when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["NORTH", "SOUTH", "EAST", "WEST"].include?(filtered_returned_hash[:direction])
-      filtered_returned_hash.delete(:direction, :attack, :damage_limit)
+      filtered_returned_hash.delete(:direction)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Melee return hash does not contain a valid direction within [:direction]."}
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:attack) && ![true, false].include?(filtered_returned_hash[:attack])
+      filtered_returned_hash.delete(:attack)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Melee return hash does not contain a valid Boolean within [:attack]."}
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:damage_limit) && !filtered_returned_hash[:damage_limit].is_a?(Integer)
+      filtered_returned_hash.delete(:damage_limit)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Melee return hash does not contain a valid Integer within [:damage_limit]."}
     end
 
     
@@ -121,6 +126,12 @@ module DockerTestMachine
     when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:direction) && !["NORTH", "SOUTH", "EAST", "WEST"].include?(filtered_returned_hash[:direction])
       filtered_returned_hash.delete(:direction)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Range return hash does not contain a valid direction within [:direction]."}
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:attack) && ![true, false].include?(filtered_returned_hash[:attack])
+      filtered_returned_hash.delete(:attack)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Range return hash does not contain a valid boolean within [:attack]."}
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:damage_limit) && !filtered_returned_hash[:damage_limit].is_a?(Integer)
+      filtered_returned_hash.delete(:damage_limit)
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Range return hash does not contain a valid Integer within [:damage_limit]."}
     end
     
     if critical_error

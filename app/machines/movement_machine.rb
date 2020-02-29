@@ -2,7 +2,7 @@ require_relative './path_finder_machine.rb'
 
 module MovementMachine
 
-  def self.process_unit_positions(turn)
+  def self.process_units_position_action(turn)
     all_friendly_active_units = Unit.find_all_friendly_units(turn)
 
 

@@ -1,4 +1,5 @@
 require_relative "../lib/classes/node.rb"
+require_relative "../lib/modules/map_presets.rb"
 
 module MapMachine
   
@@ -277,7 +278,6 @@ module MapMachine
       end
 
       # Limit on positions generated
-      puts "LIMIT HIT!!!!!!!!!!"
       if potential_target_coordinate_strings.length > 2000
         return false
       end
@@ -372,11 +372,13 @@ module MapMachine
     obstacle_spawner = Spawner.create(game: game, spawner_name: "OBSTACLE" , passed_initial_test: true, obstacle_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
     
     # Create obstacles
-    coordinate_string = "2525"
-    xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
-    obstacle_unit = Unit.create(spawner: obstacle_spawner, attribute_health: 10, coordinate_Y: xy_hash[:Y], coordinate_X: xy_hash[:X], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, obstacle: true)
-    initial_map_state[coordinate_string]["contents"] = obstacle_unit.uuid
-    
+    coordinate_string_map_preset = MapPresets.test_walls
+    coordinate_string_map_preset.each do |coordinate_string|
+      xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
+      obstacle_unit = Unit.create(spawner: obstacle_spawner, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, obstacle: true)
+      initial_map_state[coordinate_string]["contents"] = obstacle_unit.uuid
+    end
+
     initial_map_state
   end
 
@@ -403,6 +405,5 @@ module MapMachine
   end
 
 end
-
 
 

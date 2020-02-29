@@ -46,11 +46,13 @@ module ProcessSpawnerMachine
         puts "///////////////////////////////////////////////////////"
         puts "Begin loading units from marshal objects!"
         puts "////////////////////////////////////////////////////////"
-      unit_object_array = json_spawner["attributes"]["units"].map { |unit|
-          if unit["active"]
-            loaded_unit = Marshal.load(unit["marshal_object"])
-            {uuid: unit["uuid"], spawner_id: unit["spawner_id"] ,object: loaded_unit, data_set: unit["data_set"], errors: [], new: false, colour: unit["colour"]}
-          end
+
+      filtered_active_units = json_spawner["attributes"]["units"].select{ |unit| unit["active"]}
+
+      unit_object_array = filtered_active_units.map { |unit|
+        loaded_unit = Marshal.load(unit["marshal_object"])
+        {uuid: unit["uuid"], spawner_id: unit["spawner_id"] ,object: loaded_unit, data_set: unit["data_set"], errors: [], new: false, colour: unit["colour"]}
+            
         }
       rescue StandardError => error
         File.delete("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb") if File.exist?("app/docker/temp_spawner_classes/spawner_class##{randomUUID}PIXELING.rb")

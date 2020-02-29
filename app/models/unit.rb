@@ -5,7 +5,8 @@ class Unit < ApplicationRecord
   def self.find_all_friendly_units(turn)
     game = turn.game
     user = turn.user
-    all_active_units = Unit.where( active: true).order(:id)
+
+    all_active_units = Unit.where(active: true, obstacle: false).order(:id)
 
     friendly_output_array = []
 
@@ -15,10 +16,6 @@ class Unit < ApplicationRecord
       end
     end
     friendly_output_array
-  end
-
-  def self.create_obstacle_unit(spawner, coordinate_string)
-
   end
 
   def self.get_for_turn(turn)
@@ -45,21 +42,18 @@ class Unit < ApplicationRecord
     end
   end
 
-  def damage(amount)
+  def damage(amount, turn)
     self.attribute_health -= amount
     if self.attribute_health <= 0
-      self.deactivate
+      self.deactivate(turn)
     end
     self.save
   end
 
-  def deactivate
-    map_state = self.spawner.game.map_state
-
+  def deactivate(turn)
+    map_state = turn.game.map_state
     self.active = false
-    map_state[self.string_coordinates]["contents"] = 0
-
-    self.save
+    map_state[self.string_coordinates]["contents"] = nil
   end
 
   def user
@@ -113,7 +107,7 @@ class Unit < ApplicationRecord
   def self.find_all_enemy_units(turn)
     game = turn.game
     user = turn.user
-    all_active_units = Unit.where(active: true)
+    all_active_units = Unit.where(active: true, obstacle: false).order(:id)
 
     enemy_output_array = []
 

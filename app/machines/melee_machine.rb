@@ -1,5 +1,5 @@
 module MeleeMachine
-  def self.process_unit_melee_attack(turn)
+  def self.process_units_melee_action(turn)
     all_friendly_active_units = Unit.find_all_friendly_units(turn)
 
 
@@ -25,9 +25,9 @@ module MeleeMachine
       end
     when 1
       freindly_units.each do |unit|
-          MeleeMachine.process_unit_melee(unit, turn)
+          MeleeMachine.process_unit_melee_attack(unit, turn)
       end
-    when 2
+
       MapMachine.reset_effects(turn.game.map_state)
     end
   end
@@ -36,7 +36,7 @@ module MeleeMachine
     map_state = turn.game.map_state
     found_unit_output = unit.unit_output_history_array.find { |unit_output| unit_output["turn_count"] === turn.turn_count }
 
-    attack_direction = nit.user_type === "host_user" ? "EAST" : "WEST"
+    attack_direction = unit.user_type === "host_user" ? "EAST" : "WEST"
     attack_boolean = true
 
     if found_unit_output && 
@@ -65,8 +65,9 @@ module MeleeMachine
     map_state = turn.game.map_state
     found_unit_output = unit.unit_output_history_array.find { |unit_output| unit_output["turn_count"] === turn.turn_count }
 
-    attack_direction = nit.user_type === "host_user" ? "EAST" : "WEST"
+    attack_direction = unit.user_type === "host_user" ? "EAST" : "WEST"
     attack_boolean = true
+    damage_limit = unit.base_melee
 
     if found_unit_output && 
       found_unit_output["output"]["melee"] &&
@@ -82,13 +83,26 @@ module MeleeMachine
       attack_direction = found_unit_output["output"]["melee"]["direction"]
     end
 
+    if found_unit_output &&
+      found_unit_output["output"]["melee"] &&
+      found_unit_output["output"]["melee"]["damage_limit"]
+
+      if found_unit_output["output"]["melee"]["damage_limit"] > unit.base_melee
+        unit.add_error_for_turn({completed_cycle: true, error_type: "WARNING", error_message: "Melee attack limit is higher than spawner melee skill points, limit will have no affect."})
+      elsif found_unit_output["output"]["melee"]["damage_limit"] < 0
+        unit.add_error_for_turn({completed_cycle: true, error_type: "WARNING", error_message: "Melee attack limit is negative, must be positive."})
+      else
+        damage_limit = found_unit_output["output"]["melee"]["damage_limit"]
+      end
+    end
+
     if attack_boolean
       attack_target_coordinate_string = MapMachine.get_relative_string_coordinate(unit.string_coordinates, attack_direction, 1)
       if map_state[attack_target_coordinate_string] && map_state[attack_target_coordinate_string]["contents"]
         found_unit = Unit.find_by_uuid(map_state[attack_target_coordinate_string]["contents"])
 
         if found_unit
-          found_unit.damage(unit.base_melee)
+          found_unit.damage(damage_limit, turn)
         end
       end
     end
