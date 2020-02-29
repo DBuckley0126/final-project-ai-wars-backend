@@ -6,7 +6,7 @@ class Unit < ApplicationRecord
     game = turn.game
     user = turn.user
 
-    all_active_units = Unit.where(active: true, obstacle: false).order(:id)
+    all_active_units = Unit.where(active: true, obstacle: false, base: false).order(:id)
 
     friendly_output_array = []
 

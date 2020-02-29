@@ -7,22 +7,6 @@ module GameOverseerChannelLobbyMethods
       reject
     end
 
-    serializerOptions = { 
-      fields: { 
-        game: [ 
-          :capacity, 
-          :uuid, 
-          :host_user_ready, 
-          :join_user_ready, 
-          :game_initiated, 
-          :host_user_colour, 
-          :join_user_colour, 
-          :join_user, 
-          :host_user 
-        ] 
-      } 
-    }
-
     if params["request_type"] === "JOIN_LOBBY"
       # COMPLETE JOIN LOBBY REQUEST
 
@@ -152,6 +136,10 @@ module GameOverseerChannelLobbyMethods
         ] 
       } 
     }
+
+    if found_lobby && found_lobby.status === "COMPLETE"
+      return
+    end
 
     if found_lobby && found_lobby.game_initiated
         found_lobby.status = "CANCELED_GAME"

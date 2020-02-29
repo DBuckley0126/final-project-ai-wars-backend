@@ -39,7 +39,8 @@ module CableHelperActions
           :join_user_colour, 
           :join_user,
           :host_user,
-          :turn_count
+          :turn_count,
+          :winner_user_sub
         ]
       } 
     }
@@ -96,7 +97,8 @@ module CableHelperActions
           :turn_count,
           :map_states_for_turn, 
           :game, 
-          :user
+          :user,
+          :winning_turn
         ]
       } 
     }
@@ -129,7 +131,8 @@ module CableHelperActions
           :join_user,
           :host_user,
           :turn_count,
-          :map_state
+          :map_state,
+          :winner_user_sub
         ]
       } 
     }
@@ -204,7 +207,8 @@ module CableHelperActions
           :host_user_colour, 
           :join_user_colour, 
           :join_user, 
-          :host_user 
+          :host_user,
+          :winner_user_sub
         ] 
       } 
     }

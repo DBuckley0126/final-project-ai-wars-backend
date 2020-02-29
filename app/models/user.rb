@@ -12,11 +12,22 @@ class User < ApplicationRecord
     Game.where(join_user_id: self.id)
   end
 
+  def add_win
+    self.wins += 1
+    self.save
+  end
+
+  def add_loss
+    self.losses += 1
+    self.save
+  end
+
   def skill_rating
+    losses = self.losses === 0 ? 1 : self.losses
     if self.wins === 0 && self.losses === 0
       skill_calc = 0
     else
-      skill_calc = self.wins / self.losses
+      skill_calc = self.wins / losses
     end
   
     if self.total_games < 5

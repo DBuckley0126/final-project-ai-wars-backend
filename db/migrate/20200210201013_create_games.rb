@@ -14,6 +14,7 @@ class CreateGames < ActiveRecord::Migration[6.0]
       t.string :status, default: "LOBBY"
       t.integer :turn_count, default: 0
       t.json :map_state, default: {}, null: false
+      t.string :winner_user_sub
 
       t.index :uuid, unique: true
       t.timestamps

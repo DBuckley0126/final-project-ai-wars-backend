@@ -1,3 +1,14 @@
+computer_user = User.find_by(sub: "backend|5e45d67f1ba0ebb439e98")
+
+if computer_user
+  User.destroy(computer_user.id)
+end
+
+User.create(given_name: "Game", family_name: "Controller", locale: "en-GB", sub: "backend|5e45d67f1ba0ebb439e98", uuid: "F04gDzK3LVhzPJCpzKqIWw")
+
+
+
+
 # Game.destroy_all
 # Unit.destroy_all
 # Spawner.destroy_all 

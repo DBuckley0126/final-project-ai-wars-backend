@@ -11,8 +11,8 @@ class CreateTurns < ActiveRecord::Migration[6.0]
       t.integer :turn_count
       t.integer :step_count, default: 0, null: false
       t.json :map_states_for_turn, default: {}, null: false
+      t.boolean :winning_turn, default: false, null: false
 
-      # t.index :uuid, unique: true
       t.timestamps
     end
   end

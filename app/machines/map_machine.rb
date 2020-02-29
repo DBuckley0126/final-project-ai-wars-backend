@@ -367,12 +367,21 @@ module MapMachine
       current_X += 1
     end
 
-    # Create obstacle spawner
+    # Create obstacle & base spawners
     computer_ai_user = User.find_by(sub: "backend|5e45d67f1ba0ebb439e98")
     obstacle_spawner = Spawner.create(game: game, spawner_name: "OBSTACLE" , passed_initial_test: true, obstacle_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
-    
+    base_spawner = Spawner.create(game: game, spawner_name: "BASE" , passed_initial_test: true, base_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
+   
+    # Create bases
+    coordinate_string_base_preset = MapPresets.empty
+    coordinate_string_base_preset.each do |coordinate_string|
+      xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
+      base_unit = Unit.create(spawner: base_spawner, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, base: true)
+      initial_map_state[coordinate_string]["contents"] = base_unit.uuid
+    end
+
     # Create obstacles
-    coordinate_string_map_preset = MapPresets.test_walls
+    coordinate_string_map_preset = MapPresets.empty
     coordinate_string_map_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
       obstacle_unit = Unit.create(spawner: obstacle_spawner, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, obstacle: true)

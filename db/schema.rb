@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "status", default: "LOBBY"
     t.integer "turn_count", default: 0
     t.json "map_state", default: {}, null: false
+    t.string "winner_user_sub"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["uuid"], name: "index_games_on_uuid", unique: true
@@ -48,6 +49,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.json "error_history_array", default: [], null: false, array: true
     t.string "spawner_name", default: "Unit", null: false
     t.boolean "obstacle_spawner", default: false, null: false
+    t.boolean "base_spawner", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_spawners_on_game_id"
@@ -65,6 +67,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.integer "turn_count"
     t.integer "step_count", default: 0, null: false
     t.json "map_states_for_turn", default: {}, null: false
+    t.boolean "winning_turn", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_turns_on_game_id"
@@ -97,6 +100,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "target_coordinate_string"
     t.integer "path_step_count", default: 0, null: false
     t.boolean "obstacle", default: false, null: false
+    t.boolean "base", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

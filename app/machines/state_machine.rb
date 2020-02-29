@@ -3,6 +3,7 @@ require_relative './database_input_machine.rb'
 require_relative './path_finder_machine.rb'
 require_relative './movement_machine.rb'
 require_relative './melee_machine.rb'
+require_relative './payload'
 
 module StateMachine
   def self.before_state_compiler(user, game, turn)
@@ -44,6 +45,7 @@ module StateMachine
     
     MovementMachine.process_units_position_action(turn)
     MeleeMachine.process_units_melee_action(turn)
+    StateMachine.check_for_win(turn)
 
     # Check all processed units for errors
     all_friendly_active_units.each do |unit|
@@ -55,6 +57,48 @@ module StateMachine
     Unit.save_collection(all_friendly_active_units)
     turn.save
     turn.game.save
+  end
+
+  def self.check_for_win(turn)
+    map_state = turn.game.map_state
+    host_user = turn.game.host_user
+    join_user = turn.game.join_user
+
+    if turn.game.join_user === turn.user
+      user_type = "join_user"
+    else
+      user_type = "host_user"
+    end
+
+    friendly_units = Unit.find_all_friendly_units(turn)
+
+    friendly_units.each do |unit|
+      xy_hash = MapMachine.convert_string_to_coordinate_xy(unit.string_coordinates)
+      if user_type === "host_user"
+        if xy_hash[:x] === 50
+          if map_state[unit.string_coordinates]["contents"] && map_state[unit.string_coordinates]["contents"] === unit.uuid
+            StateMachine.complete_winning_state(turn, host_user, join_user)
+          end
+        end
+      end
+      if user_type === "join_user"
+        if xy_hash[:x] === 1
+          if map_state[unit.string_coordinates]["contents"] && map_state[unit.string_coordinates]["contents"] === unit.uuid
+            StateMachine.complete_winning_state(turn, join_user, host_user)
+          end
+        end
+      end
+    end
+
+  end
+
+  def self.complete_winning_state(turn, winning_user, loosing_user)
+    game = turn.game
+    turn.winning_turn = true
+    game.winner_user_sub = winning_user.sub
+    game.status = "COMPLETE"
+    winning_user.add_win()
+    loosing_user.add_loss()
   end
 
   def self.process_new_unit_state(unit, turn)
@@ -69,9 +113,9 @@ module StateMachine
 
     # Decides which side of the map to spawn on
     if unit.user_type == "host_user"
-      unit.coordinate_X = 1
+      unit.coordinate_X = 47
     else
-      unit.coordinate_X = 50
+      unit.coordinate_X = 3
     end
     
     found_unit_output = unit.unit_output_history_array.first
