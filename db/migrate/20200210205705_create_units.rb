@@ -27,6 +27,9 @@ class CreateUnits < ActiveRecord::Migration[6.0]
       t.integer :path_step_count, default: 0, null: false
       t.boolean :obstacle, default: false, null: false
       t.boolean :base, default: false, null: false
+      t.integer :user_id, null: false
+      t.integer :game_id, null: false
+
 
       t.index :uuid, unique: true
       t.timestamps

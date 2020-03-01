@@ -20,6 +20,7 @@ module ProcessSpawnerMachine
         puts "////////////////////////////////////////////////////////"
         # Attempts load of created file
         begin
+          require_relative "spawner_addons/base_pixeling"
           require_relative "temp_spawner_classes/spawner_class##{randomUUID}PIXELING"
           puts "///////////////////////////////////////////////////////"
           puts "sucessfully loaded file!"
@@ -78,7 +79,7 @@ module ProcessSpawnerMachine
       if new_unit_result && new_unit_result[:test_results] === "FAIL"
         spawner_error_array << new_unit_result
       else 
-        unit_object_array << {uuid: rand(1000000000..9999999999), spawner_id: json_spawner["id"], object: new_unit_result[:payload], data_set: {}, errors: [], new: true, colour: json_spawner["attributes"]["colour"]}
+        unit_object_array << {uuid: rand(1000000000..9999999999), spawner_id: json_spawner["id"], object: new_unit_result[:payload], data_set: json_spawner["attributes"]["default_data_set"], errors: [], new: true, colour: json_spawner["attributes"]["colour"]}
       end
 
       puts "///////////////////////////////////////////////////////"

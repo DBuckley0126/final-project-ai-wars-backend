@@ -50,6 +50,7 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.string "spawner_name", default: "Unit", null: false
     t.boolean "obstacle_spawner", default: false, null: false
     t.boolean "base_spawner", default: false, null: false
+    t.json "default_data_set", default: {}, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["game_id"], name: "index_spawners_on_game_id"
@@ -101,6 +102,8 @@ ActiveRecord::Schema.define(version: 2020_02_20_205705) do
     t.integer "path_step_count", default: 0, null: false
     t.boolean "obstacle", default: false, null: false
     t.boolean "base", default: false, null: false
+    t.integer "user_id", null: false
+    t.integer "game_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["spawner_id"], name: "index_units_on_spawner_id"

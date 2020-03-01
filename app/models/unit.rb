@@ -5,17 +5,42 @@ class Unit < ApplicationRecord
   def self.find_all_friendly_units(turn)
     game = turn.game
     user = turn.user
-
-    all_active_units = Unit.where(active: true, obstacle: false, base: false).order(:id)
-
-    friendly_output_array = []
-
-    all_active_units.each do |unit|
-      if unit.spawner.game === game && unit.spawner.user === user 
-        friendly_output_array << unit
-      end
+    found_units = Unit.where(active: true, obstacle: false, base: false, game_id: game.id, user_id: user.id).order(:id)
+    if found_units
+      return found_units
+    else
+      return []
     end
-    friendly_output_array
+  end
+
+  def self.find_all_enemy_units(turn)
+    game = turn.game
+    user = turn.user
+
+    if game.host_user == user
+      enemy_user_id = game.join_user.id
+    else
+      enemy_user_id = game.host_user.id
+    end
+    
+    found_units = Unit.where(active: true, obstacle: false, base: false, game_id: game.id, user_id: enemy_user_id).order(:id)
+    if found_units
+      return found_units
+    else
+      return []
+    end
+  end
+
+  def self.find_all_obstacles(turn)
+    game = turn.game
+    
+    all_active_obstacles = Unit.where(active: true, obstacle: true, base: false, game_id: game.id)
+
+    if all_active_obstacles
+      return all_active_obstacles
+    else
+      return []
+    end
   end
 
   def self.get_for_turn(turn)
@@ -60,6 +85,16 @@ class Unit < ApplicationRecord
     self.spawner.user
   end
 
+  def distance(string_coordinate)
+    xy_hash = MapMachine.convert_string_to_coordinate_xy(string_coordinate)
+
+      return (
+        (self.coordinate_X - xy_hash[:x]) ** 2 +
+        (self.coordinate_Y - xy_hash[:y]) ** 2
+      ) ** (0.5)
+
+  end
+
   def find_new_target(map_state)
     closest_coordinate_string = MapMachine.find_nearest_avilable_coordinate(map_state, self.string_coordinates, self.target_coordinate_string)
     # If unit is already next to desired target, set target to current position
@@ -102,21 +137,6 @@ class Unit < ApplicationRecord
       self.error_history_array << {turn_count: game.turn_count, error_array: [error]}
     end
     self.save
-  end
-
-  def self.find_all_enemy_units(turn)
-    game = turn.game
-    user = turn.user
-    all_active_units = Unit.where(active: true, obstacle: false).order(:id)
-
-    enemy_output_array = []
-
-    all_active_units.each do |unit|
-      if unit.spawner.game === game && !unit.spawner.user === user
-        enemy_output_array << unit
-      end
-    end
-    enemy_output_array
   end
 
   def self.find_all_active_units(turn)

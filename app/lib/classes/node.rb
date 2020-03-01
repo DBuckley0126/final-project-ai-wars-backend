@@ -32,6 +32,7 @@ class Node
     ) ** (0.5)
   end
 
+
   def reset
     @g = 0.0
     @h = 0.0

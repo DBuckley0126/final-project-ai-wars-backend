@@ -30,6 +30,8 @@ module DatabaseInputMachine
         if !unit_to_be_processed && processed_unit["new"]
           unit_to_be_processed = Unit.new
           unit_to_be_processed.uuid = processed_unit["uuid"]
+          unit_to_be_processed.user_id = turn.user.id
+          unit_to_be_processed.game_id = game.id          
           unit_to_be_processed.new = true
           unit_to_be_processed.spawner = Spawner.find_by_id(processed_unit["spawner_id"])
           unit_to_be_processed.colour = processed_unit["colour"]

@@ -3,12 +3,23 @@ require_relative './database_input_machine.rb'
 require_relative './path_finder_machine.rb'
 require_relative './movement_machine.rb'
 require_relative './melee_machine.rb'
-require_relative './payload'
+require_relative './payload_machine'
 
 module StateMachine
   def self.before_state_compiler(user, game, turn)
     
+    all_friendly_active_units = Unit.find_all_friendly_units(turn)
+
+    # Process unit payloads if active
+    all_friendly_active_units.each do |unit|
+      PayloadMachine.add_payload(turn, unit)
+    end
+
     related_spawners = Spawner.where(user: user, game: game)
+
+    related_spawners.each do |spawner|
+      PayloadMachine.add_general_payload(turn, spawner)
+    end
 
     json = SpawnerSerializer.new(related_spawners).serialized_json
 
@@ -113,9 +124,9 @@ module StateMachine
 
     # Decides which side of the map to spawn on
     if unit.user_type == "host_user"
-      unit.coordinate_X = 47
-    else
       unit.coordinate_X = 3
+    else
+      unit.coordinate_X = 48
     end
     
     found_unit_output = unit.unit_output_history_array.first

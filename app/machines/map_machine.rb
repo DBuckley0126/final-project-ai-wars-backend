@@ -370,21 +370,35 @@ module MapMachine
     # Create obstacle & base spawners
     computer_ai_user = User.find_by(sub: "backend|5e45d67f1ba0ebb439e98")
     obstacle_spawner = Spawner.create(game: game, spawner_name: "OBSTACLE" , passed_initial_test: true, obstacle_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
-    base_spawner = Spawner.create(game: game, spawner_name: "BASE" , passed_initial_test: true, base_spawner: true, user: computer_ai_user, colour: "#7aa9de", skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
+    
+    
+    join_base_spawner = Spawner.create(game: game, spawner_name: "PLAYER 2 BASE" , passed_initial_test: true, base_spawner: true, user: computer_ai_user, colour: game.join_user_colour, skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
+    host_base_spawner = Spawner.create(game: game, spawner_name: "PLAYER 1 BASE" , passed_initial_test: true, base_spawner: true, user: computer_ai_user, colour: game.host_user_colour, skill_points: {melee: 0, range: 0, vision: 0, health: 10, movement: 0})
    
-    # Create bases
-    coordinate_string_base_preset = MapPresets.empty
-    coordinate_string_base_preset.each do |coordinate_string|
+    # Create host base
+    # Base UUID length is 9
+    coordinate_string_host_base_preset = MapPresets.two_layer_host_base
+    coordinate_string_host_base_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
-      base_unit = Unit.create(spawner: base_spawner, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, base: true)
+      base_unit = Unit.create(spawner: host_base_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(100000000..999999999), colour: game.host_user_colour, new: false, base: true)
+      initial_map_state[coordinate_string]["contents"] = base_unit.uuid
+    end
+
+    # Create join base
+    # Base UUID length is 9
+    coordinate_string_join_base_preset = MapPresets.two_layer_join_base
+    coordinate_string_join_base_preset.each do |coordinate_string|
+      xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
+      base_unit = Unit.create(spawner: join_base_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(100000000..999999999), colour: game.join_user_colour, new: false, base: true)
       initial_map_state[coordinate_string]["contents"] = base_unit.uuid
     end
 
     # Create obstacles
-    coordinate_string_map_preset = MapPresets.empty
+    # Base UUID length is 8
+    coordinate_string_map_preset = MapPresets.the_wall
     coordinate_string_map_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
-      obstacle_unit = Unit.create(spawner: obstacle_spawner, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(1000000000..9999999999), colour: "#7aa9de", new: false, obstacle: true)
+      obstacle_unit = Unit.create(spawner: obstacle_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(10000000..99999999), colour: "#7aa9de", new: false, obstacle: true)
       initial_map_state[coordinate_string]["contents"] = obstacle_unit.uuid
     end
 

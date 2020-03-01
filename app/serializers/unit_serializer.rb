@@ -26,5 +26,7 @@ class UnitSerializer
   :current_path, 
   :target_coordinate_string,
   :path_step_count,
-  :obstacle
+  :obstacle,
+  :game_id,
+  :user_id
 end

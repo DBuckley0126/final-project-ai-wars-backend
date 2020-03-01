@@ -51,6 +51,18 @@ class Spawner < ApplicationRecord
     Spawner.where(game: turn.game)
   end
 
+  def user_type
+    game = self.game
+
+    if self.user === game.host_user
+      return "host_user"
+    elsif self.user === game.join_user
+      return "join_user"
+    else
+      return false
+    end
+  end
+
 
   def check_for_fatal_errors_for_turn
 

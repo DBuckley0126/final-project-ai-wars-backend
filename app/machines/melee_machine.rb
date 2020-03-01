@@ -53,7 +53,7 @@ module MeleeMachine
       attack_direction = found_unit_output["output"]["melee"]["direction"]
     end
 
-    if attack_boolean
+    if attack_boolean && unit.base_melee > 0
       attack_target_coordinate_string = MapMachine.get_relative_string_coordinate(unit.string_coordinates, attack_direction, 1)
       if map_state[attack_target_coordinate_string]
         map_state[attack_target_coordinate_string]["effect"] = 1
@@ -96,7 +96,7 @@ module MeleeMachine
       end
     end
 
-    if attack_boolean
+    if attack_boolean && unit.base_melee > 0
       attack_target_coordinate_string = MapMachine.get_relative_string_coordinate(unit.string_coordinates, attack_direction, 1)
       if map_state[attack_target_coordinate_string] && map_state[attack_target_coordinate_string]["contents"]
         found_unit = Unit.find_by_uuid(map_state[attack_target_coordinate_string]["contents"])
