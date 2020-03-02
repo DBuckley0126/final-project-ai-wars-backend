@@ -104,7 +104,7 @@ Rails.application.configure do
   # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
 
   # action Cable setup
-  config.action_cable.allowed_request_origins = ['https://final-project-ai-wars-backend.herokuapp.com', 'http://final-project-ai-wars-back.herokuapp.com', 'file://']
+  config.action_cable.allowed_request_origins = ['https://final-project-ai-wars-frontend.herokuapp.com', 'http://final-project-ai-wars-frontend.herokuapp.com', 'file://']
   config.web_socket_server_url = Rails.application.credentials.WEB_SOCKET_SERVER_URL
   
 end
