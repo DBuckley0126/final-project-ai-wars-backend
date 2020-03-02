@@ -1,4 +1,4 @@
-module CableHelperActions
+module BroadcastActions::CableHelperActions
 
   def self.update_game_instances
     serializerOptions = { 
