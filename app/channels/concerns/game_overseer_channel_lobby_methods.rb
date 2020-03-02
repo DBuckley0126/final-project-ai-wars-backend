@@ -28,7 +28,7 @@ module GameOverseerChannelLobbyMethods
           body: {game_uuid: ready_lobby.uuid}
         )
 
-        CableHelperActions.update_game_lobby(ready_lobby)
+        BroadcastActions::CableHelperActions.update_game_lobby(ready_lobby)
   
       else
         reject
@@ -51,7 +51,7 @@ module GameOverseerChannelLobbyMethods
           body: {game_uuid: created_lobby.uuid}
         )
   
-        CableHelperActions.update_game_lobby(created_lobby)
+        BroadcastActions::CableHelperActions.update_game_lobby(created_lobby)
 
       else
         reject
@@ -59,7 +59,7 @@ module GameOverseerChannelLobbyMethods
 
     else
     end
-    CableHelperActions.update_game_instances()
+    BroadcastActions::CableHelperActions.update_game_instances()
   end
 
   def update_user_lobby_status(payload)
