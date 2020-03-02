@@ -1,4 +1,4 @@
-module MapPresets
+module Modules::MapPresets
   def self.empty
     []
   end
