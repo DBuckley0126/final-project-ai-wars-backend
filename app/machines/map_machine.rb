@@ -377,7 +377,7 @@ module MapMachine
    
     # Create host base
     # Base UUID length is 9
-    coordinate_string_host_base_preset = MapPresets.two_layer_host_base
+    coordinate_string_host_base_preset = Modules::MapPresets.two_layer_host_base
     coordinate_string_host_base_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
       base_unit = Unit.create(spawner: host_base_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(100000000..999999999), colour: game.host_user_colour, new: false, base: true)
@@ -386,7 +386,7 @@ module MapMachine
 
     # Create join base
     # Base UUID length is 9
-    coordinate_string_join_base_preset = MapPresets.two_layer_join_base
+    coordinate_string_join_base_preset = Modules::MapPresets.two_layer_join_base
     coordinate_string_join_base_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
       base_unit = Unit.create(spawner: join_base_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(100000000..999999999), colour: game.join_user_colour, new: false, base: true)
@@ -395,7 +395,7 @@ module MapMachine
 
     # Create obstacles
     # Base UUID length is 8
-    coordinate_string_map_preset = MapPresets.the_wall
+    coordinate_string_map_preset = Modules::MapPresets.the_wall
     coordinate_string_map_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
       obstacle_unit = Unit.create(spawner: obstacle_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 10, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 10, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(10000000..99999999), colour: "#7aa9de", new: false, obstacle: true)

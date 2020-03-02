@@ -21,7 +21,7 @@ module TurnMachine
     if found_turn
       StateMachine.after_state_compiler(found_turn)
       StateMachine.game_state_processor(found_turn)
-      CableHelperActions.update_game_of_turn(found_turn)
+      BroadcastActions::CableHelperActions.update_game_of_turn(found_turn)
     else
       puts "SERVER_ERROR: UNABLE TO FIND TURN"
     end

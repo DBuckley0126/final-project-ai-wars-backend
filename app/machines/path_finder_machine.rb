@@ -143,7 +143,7 @@ module PathFinderMachine
     output_node_map = {}
 
     map_state.each do |coordinate_key, value|
-      output_node_map[coordinate_key] = {contents: value["contents"], node: Node.new(coordinate_key), effect: value["effect"]}
+      output_node_map[coordinate_key] = {contents: value["contents"], node: Classes::Node.new(coordinate_key), effect: value["effect"]}
     end
 
     output_node_map

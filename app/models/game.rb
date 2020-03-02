@@ -55,7 +55,7 @@ class Game < ApplicationRecord
     successfully_saved_game = self.save
 
     if successfully_saved_game
-      CableHelperActions.update_game_instances()
+      BroadcastActions::CableHelperActions.update_game_instances()
       return self
     else 
       return false

@@ -1,4 +1,4 @@
-class SpawnerAddons::BasePixeling
+class BasePixeling
   
   attr_reader :base_vision, :unit_vision, :game_data, :skill_points, :unit_health 
 

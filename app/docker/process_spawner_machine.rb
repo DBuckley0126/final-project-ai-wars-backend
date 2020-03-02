@@ -20,7 +20,7 @@ module ProcessSpawnerMachine
         puts "////////////////////////////////////////////////////////"
         # Attempts load of created file
         begin
-          require_relative "spawner_addons/base_pixeling"
+          require_relative "base_pixeling"
           require_relative "temp_spawner_classes/spawner_class##{randomUUID}PIXELING"
           puts "///////////////////////////////////////////////////////"
           puts "sucessfully loaded file!"

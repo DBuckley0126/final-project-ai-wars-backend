@@ -96,7 +96,7 @@ module GameOverseerChannelLobbyMethods
     end
 
     found_lobby.save
-    CableHelperActions.update_game_lobby(found_lobby)
+    BroadcastActions::CableHelperActions.update_game_lobby(found_lobby)
   end
 
   def start_game_request
@@ -110,8 +110,8 @@ module GameOverseerChannelLobbyMethods
     if found_lobby.host_user_ready && found_lobby.join_user_ready && found_lobby.host_user === user
       found_lobby.init_game
 
-      CableHelperActions.init_game(found_lobby)
-      CableHelperActions.update_game_instances()
+      BroadcastActions::CableHelperActions.init_game(found_lobby)
+      BroadcastActions::CableHelperActions.update_game_instances()
     else 
       return
     end
@@ -168,7 +168,7 @@ module GameOverseerChannelLobbyMethods
           body: GameSerializer.new(found_lobby, serializerOptions).serializable_hash
         )
 
-      CableHelperActions.update_game_lobby(found_lobby)
+        BroadcastActions::CableHelperActions.update_game_lobby(found_lobby)
 
     else
       if found_lobby && found_lobby.host_user === user
@@ -190,10 +190,10 @@ module GameOverseerChannelLobbyMethods
         found_lobby.host_user_ready = false
         found_lobby.join_user_ready = false
         found_lobby.save
-        CableHelperActions.update_game_lobby(found_lobby)
+        BroadcastActions::CableHelperActions.update_game_lobby(found_lobby)
       end
 
-      CableHelperActions.update_game_instances()
+      BroadcastActions::CableHelperActions.update_game_instances()
     end
   end
 end
