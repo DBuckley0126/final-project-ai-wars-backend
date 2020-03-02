@@ -6,7 +6,7 @@
 #  - @g: the heuristic distance to the start node
 #  - @f: The total heuristic distance is the sum of (@g + @h)
 
-class Node
+class Classes::Node
 
   attr_reader :x, :y, :coordinate_key
   attr_accessor :g, :h, :previous
