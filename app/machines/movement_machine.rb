@@ -115,7 +115,6 @@ module MovementMachine
 
       # Checks if target coordinate position is taken
       if map_state[unit.target_coordinate_string]["contents"]
-        puts "target coordinate taken!!!!!!!!!!!!!!!!!!!!!!!!!!"
         unit.find_new_target(map_state)
         target_xy_hash = MapMachine.convert_string_to_coordinate_xy(unit.target_coordinate_string)
         target_X = target_xy_hash[:x]

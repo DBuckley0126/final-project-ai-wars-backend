@@ -3,15 +3,22 @@ module PayloadMachine
   def self.add_payload(turn, unit)
     payload_hash = {
       base_vision: [],
-      unit_vision: [],
+      pixeling_vision: [],
       game_data: {},
       skill_points: {},
-      unit_health: nil
+      pixeling_data: {
+        health: 0,
+        coordinate_X: 0,
+        coordinate_Y: 0,
+        target_coordinate_string: "nil",
+        current_coordinate_path: [],
+        current_coordinate_string: "nil"
+      }
     }
 
-    unit_health = PayloadMachine.get_health(unit)
-    if unit_health
-      payload_hash[:unit_health] = unit_health
+    pixeling_data = PayloadMachine.get_pixeling_data(unit)
+    if pixeling_data
+      payload_hash[:pixeling_data] = pixeling_data
     end
 
     game_data = PayloadMachine.get_game_data(turn, unit)
@@ -19,9 +26,9 @@ module PayloadMachine
       payload_hash[:game_data] = game_data
     end
 
-    unit_vision = PayloadMachine.get_unit_vision(turn, unit)
-    if unit_vision
-      payload_hash[:unit_vision] = unit_vision
+    pixeling_vision = PayloadMachine.get_pixeling_vision(turn, unit)
+    if pixeling_vision
+      payload_hash[:pixeling_vision] = pixeling_vision
     end
 
     base_vision = PayloadMachine.get_base_vision(turn, unit)
@@ -29,9 +36,9 @@ module PayloadMachine
       payload_hash[:base_vision] = base_vision
     end
 
-    unit_skill_points = PayloadMachine.get_skill_points(unit.spawner)
-    if unit_skill_points
-      payload_hash[:skill_points] = unit_skill_points
+    pixeling_skill_points = PayloadMachine.get_skill_points(unit.spawner)
+    if pixeling_skill_points
+      payload_hash[:skill_points] = pixeling_skill_points
     end
     unit.data_set = payload_hash
     unit.save
@@ -40,10 +47,17 @@ module PayloadMachine
   def self.add_general_payload(turn, spawner)
     payload_hash = {
       base_vision: [],
-      unit_vision: [],
+      pixeling_vision: [],
       game_data: {},
       skill_points: {},
-      unit_health: spawner.skill_points["health"]
+      pixeling_data: {
+        health: spawner.skill_points["health"],
+        coordinate_X: 0,
+        coordinate_Y: 0,
+        target_coordinate_string: "nil",
+        previous_coordinate_path: [],
+        current_coordinate_string: "nil"
+      }
     }
 
     game_data = PayloadMachine.get_game_data(turn, spawner)
@@ -65,8 +79,15 @@ module PayloadMachine
     spawner.save
   end
 
-  def self.get_health(unit)
-      unit.attribute_health
+  def self.get_pixeling_data(unit)
+      {
+        health: unit.attribute_health,
+        coordinate_X: unit.coordinate_X,
+        coordinate_Y: unit.coordinate_Y,
+        target_coordinate_string: unit.target_coordinate_string,
+        current_coordinate_path: unit.current_path,
+        current_coordinate_string: unit.string_coordinates
+      }
   end
 
   def self.get_skill_points(spawner)
@@ -87,7 +108,7 @@ module PayloadMachine
 
     output_hash[:turn_count] = game.turn_count
 
-    output_hash[:active_friendly_units] = Unit.find_all_friendly_units(turn).map do |friendly_unit|
+    output_hash[:active_friendly_pixelings] = Unit.find_all_friendly_units(turn).map do |friendly_unit|
       {
         spawner_name: friendly_unit.spawner.spawner_name,
         health: friendly_unit.attribute_health,
@@ -103,7 +124,7 @@ module PayloadMachine
       }
     end
 
-    output_hash[:active_enemy_unit_count] = Unit.find_all_enemy_units(turn).length
+    output_hash[:active_enemy_pixelings_count] = Unit.find_all_enemy_units(turn).length
 
     if user_type === "host_user"
       output_hash[:friendly_base_health] = game.host_user_base_health
@@ -116,7 +137,7 @@ module PayloadMachine
     output_hash
   end
 
-  def self.get_unit_vision(turn, unit)
+  def self.get_pixeling_vision(turn, unit)
     output_hash = {}
 
     # Get friendly units within vision and sort by distance
@@ -142,7 +163,7 @@ module PayloadMachine
       end
     end
     sorted_friendly_unit_array = friendly_unit_array.sort_by { |friendly_unit| friendly_unit[:distance]}
-    output_hash[:friendly_units] = sorted_friendly_unit_array
+    output_hash[:friendly_pixelings] = sorted_friendly_unit_array
 
     # Get enemy units within vision and sort by distance
     enemy_unit_array = []
@@ -160,7 +181,7 @@ module PayloadMachine
       end
     end
     sorted_enemy_unit_array = enemy_unit_array.sort_by { |enemy_unit| enemy_unit[:distance]}
-    output_hash[:enemy_units] = sorted_enemy_unit_array
+    output_hash[:enemy_pixelings] = sorted_enemy_unit_array
 
     # Get obstacles within vision and sort by distance
     obstacle_array = []

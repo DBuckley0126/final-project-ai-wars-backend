@@ -28,19 +28,21 @@ module BroadcastActions::CableHelperActions
 
   def self.update_game_of_turn(turn)
     game_serializer_options = { 
-      fields: { 
+      fields: {
         game: [
           :capacity,
           :uuid, 
           :host_user_ready, 
           :join_user_ready, 
           :game_initiated, 
-          :host_user_colour, 
+          :host_user_colour,
           :join_user_colour, 
           :join_user,
           :host_user,
           :turn_count,
-          :winner_user_sub
+          :winner_user_sub,
+          :join_user_base_health, 
+          :host_user_base_health
         ]
       } 
     }

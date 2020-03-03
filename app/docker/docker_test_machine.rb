@@ -33,7 +33,7 @@ module DockerTestMachine
 
     case true
     #CHECKS HASH CONTENTS - WARNINGS  
-    when filtered_returned_hash.key?(:limit) && rfiltered_returned_hash[:limit].is_a?(Integer)
+    when filtered_returned_hash.key?(:limit) && filtered_returned_hash[:limit].is_a?(Integer)
       filtered_returned_hash.delete(:limit)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Movement return hash does not contain a Integer within [:limit]."}
 
@@ -163,9 +163,9 @@ module DockerTestMachine
       filtered_returned_hash.delete(:Y)
       error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Spawn Position return hash does not contain a valid Integer for [:Y]."}
     
-    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:Y) && filtered_returned_hash[:Y].is_a?(Integer) && (filtered_returned_hash[:Y] > 50 || filtered_returned_hash[:Y] < 1)
+    when !filtered_returned_hash.empty? && filtered_returned_hash.key?(:Y) && filtered_returned_hash[:Y].is_a?(Integer) && (filtered_returned_hash[:Y] > 25 || filtered_returned_hash[:Y] < 1)
       filtered_returned_hash.delete(:Y)
-      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Spawn Position return value #{filtered_returned_hash[:Y]} for [:Y] is not within the valid range of (1..50)."}
+      error_array << {completed_cycle: true, error_type: "WARNING", error_message: "Spawn Position return value #{filtered_returned_hash[:Y]} for [:Y] is not within the valid range of (1..25)."}
     end
     
     if critical_error

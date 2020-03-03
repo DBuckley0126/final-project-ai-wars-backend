@@ -86,7 +86,7 @@ module StateMachine
     friendly_units.each do |unit|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(unit.string_coordinates)
       if user_type === "host_user"
-        if xy_hash[:x] === 50
+        if xy_hash[:x] === 25
           if map_state[unit.string_coordinates]["contents"] && map_state[unit.string_coordinates]["contents"] === unit.uuid
             StateMachine.complete_winning_state(turn, host_user, join_user)
           end
@@ -124,9 +124,9 @@ module StateMachine
 
     # Decides which side of the map to spawn on
     if unit.user_type == "host_user"
-      unit.coordinate_X = 3
+      unit.coordinate_X = 2
     else
-      unit.coordinate_X = 48
+      unit.coordinate_X = 24
     end
     
     found_unit_output = unit.unit_output_history_array.first

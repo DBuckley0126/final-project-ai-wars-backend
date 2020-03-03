@@ -1,4 +1,5 @@
 include ActiveRecordFilters
+
 class GameSerializer
   include FastJsonapi::ObjectSerializer
   belongs_to :host_user, :polymorphic => true
@@ -7,7 +8,7 @@ class GameSerializer
   has_many :units, through: :spawners
   has_many :turns
 
-  attributes :capacity, :uuid, :host_user_ready, :join_user_ready, :game_initiated, :host_user_colour, :join_user_colour, :turn_count, :winner_user_sub
+  attributes :capacity, :uuid, :host_user_ready, :join_user_ready, :game_initiated, :host_user_colour, :join_user_colour, :turn_count, :winner_user_sub, :join_user_base_health, :host_user_base_health
   
   attribute :map_state, &:map_state_to_array
 

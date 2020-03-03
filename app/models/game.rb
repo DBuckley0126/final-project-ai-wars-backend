@@ -70,14 +70,12 @@ class Game < ApplicationRecord
     map_state = self.map_state
 
     level_1_count = 0
-    level_2_count = 0
 
     x_level_1 = 1
-    x_level_2 = 2
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_1, y)
       contents = map_state[string_coordinate]["contents"]
       if contents && contents.digits.count == 9
@@ -86,38 +84,19 @@ class Game < ApplicationRecord
       y += 1
     end
 
-    y = 1
-
-    50.times do 
-      string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_2, y)
-      contents = map_state[string_coordinate]["contents"]
-      if contents && contents.digits.count == 9
-        level_2_count +=1
-      end
-      y += 1
-    end
-
-    if level_1_count != 50
-      return 0
-    elsif level_2_count != 50
-      return 1
-    else
-      return 2
-    end
+    level_1_count
   end
 
   def join_user_base_health
     map_state = self.map_state
 
     level_1_count = 0
-    level_2_count = 0
 
-    x_level_1 = 50
-    x_level_2 = 49
+    x_level_1 = 25
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_1, y)
       contents = map_state[string_coordinate]["contents"]
       if contents && contents.digits.count == 9
@@ -125,25 +104,7 @@ class Game < ApplicationRecord
       end
       y += 1
     end
-
-    y = 1
-
-    50.times do 
-      string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_2, y)
-      contents = map_state[string_coordinate]["contents"]
-      if contents && contents.digits.count == 9
-        level_2_count +=1
-      end
-      y += 1
-    end
-
-    if level_1_count != 50
-      return 0
-    elsif level_2_count != 50
-      return 1
-    else
-      return 2
-    end
+    level_1_count
   end
 
   def host_user_base_vision
@@ -151,12 +112,12 @@ class Game < ApplicationRecord
 
     output_array = []
 
-    x_level_1 = 3
-    x_level_2 = 4
+    x_level_1 = 2
+    x_level_2 = 3
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_1, y)
       contents = map_state[string_coordinate]["contents"]
       if contents
@@ -170,7 +131,7 @@ class Game < ApplicationRecord
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_2, y)
       contents = map_state[string_coordinate]["contents"]
       if contents
@@ -190,12 +151,12 @@ class Game < ApplicationRecord
 
     output_array = []
 
-    x_level_1 = 48
-    x_level_2 = 47
+    x_level_1 = 23
+    x_level_2 = 24
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_1, y)
       contents = map_state[string_coordinate]["contents"]
       if contents
@@ -209,7 +170,7 @@ class Game < ApplicationRecord
 
     y = 1
 
-    50.times do 
+    25.times do 
       string_coordinate = MapMachine.convert_xy_to_coordinate_string(x_level_2, y)
       contents = map_state[string_coordinate]["contents"]
       if contents

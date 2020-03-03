@@ -76,8 +76,8 @@ class Classes::Node
   private
   # If potential node string is a valid coordinate on map, add to output array
   def check_potential_neighbor_nodes_validity(array_of_potential_neighbor_nodes)
-    max_x = 50
-    max_y = 50
+    max_x = 25
+    max_y = 25
 
     output_array = []
 
