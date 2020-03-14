@@ -204,9 +204,17 @@ class Game < ApplicationRecord
   private
 
   def set_colours
-    colour_array = ["#3432a8", "#a83283", "#3ca832", "#a83c32"]
+    colour_array = [
+      "rgba(0,255,232, 1)",
+      "rgba(255,0,248, 1)",
+      "rgba(184,2,249, 1)",
+      "rgba(47,251,1, 1)",
+      "rgba(251,126,0, 1)",
+      "rgba(0,30,255, 1)",
+      "rgba(235,255,0, 1)",
+      "rgba(255,0,0, 1)"
+    ]
     self.host_user_colour = colour_array.sample
-    
     potential_join_user_colour = colour_array.sample
 
     while potential_join_user_colour == self.host_user_colour

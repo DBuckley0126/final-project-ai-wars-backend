@@ -44,9 +44,9 @@ class User < ApplicationRecord
       return "Expert"  
     elsif skill_calc <= 2.5
       return "Master"
-    elsif skill_calc <= 3
+    elsif skill_calc <= 3.5
       return "Legend"
-    elsif skill_calc <= 4
+    elsif skill_calc > 3.5
       return "DeepMind"                
     end
   end

@@ -53,3 +53,31 @@ payload_hash = {
   base_spawn_position: friendly_unit.base_spawn_position,
   string_coordinate: friendly_unit.string_coordinates
 }
+
+
+class Pixeling < BasePixeling
+  def movement
+    closest_enemy_pixeling = @pixeling_vision["enemy_pixelings"][0]
+    
+    if closest_enemy_pixeling
+      enemy_y = closest_enemy_pixeling["coordinate_Y"]
+      enemy_x = closest_enemy_pixeling["coordinate_X"]
+      return {target:{X: enemy_x - 1, Y: enemy_y}}
+    else
+      self.patrol
+    end 
+    
+  end
+  
+  def spawn_position
+    {Y: 15}
+  end
+  
+  def patrol
+    if @game_data["turn_count"].odd?()
+      return {target:{X: 7, Y:15}}
+    else
+      return {target:{X: 7, Y:11}}
+    end
+  end
+end
