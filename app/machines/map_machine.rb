@@ -398,7 +398,7 @@ module MapMachine
     coordinate_string_map_preset = Modules::MapPresets.the_wall
     coordinate_string_map_preset.each do |coordinate_string|
       xy_hash = MapMachine.convert_string_to_coordinate_xy(coordinate_string)
-      obstacle_unit = Unit.create(spawner: obstacle_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 5, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 5, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(10000000..99999999), colour: "#7aa9de", new: false, obstacle: true)
+      obstacle_unit = Unit.create(spawner: obstacle_spawner, game_id: game.id, user_id: computer_ai_user.id, attribute_health: 5, coordinate_Y: xy_hash[:y], coordinate_X: xy_hash[:x], base_health: 5, base_movement: 0, base_range: 0, base_melee: 0, base_vision: 0, base_spawn_position: coordinate_string, uuid: rand(10000000..99999999), colour: "rgb(169, 169, 169)", new: false, obstacle: true)
       initial_map_state[coordinate_string]["contents"] = obstacle_unit.uuid
     end
 
